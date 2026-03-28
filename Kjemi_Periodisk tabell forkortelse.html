@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Periodisk system - Plasser forkortelser i riktig rute</title>
+    <title>Periodisk system - Plasser forkortelser | Lær om grunnstoffene</title>
     <style>
         * {
             box-sizing: border-box;
@@ -90,6 +90,85 @@
             transform: scale(0.97);
         }
 
+        /* Fixed info box at top-center of periodic table */
+        .element-info-panel {
+            background: linear-gradient(135deg, #0f212f, #1a2f3a);
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin-bottom: 1rem;
+            border-left: 5px solid #ffb347;
+            border-right: 1px solid rgba(255, 180, 70, 0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+            min-height: 95px;
+        }
+
+        .element-info-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 200, 100, 0.3);
+            padding-bottom: 6px;
+        }
+
+        .element-info-symbol {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: #ffb34730;
+            padding: 2px 12px;
+            border-radius: 40px;
+            color: #ffdd99;
+            font-family: monospace;
+        }
+
+        .element-info-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #FFE6C7;
+        }
+
+        .element-info-number {
+            font-size: 0.85rem;
+            color: #bbccdd;
+            background: #00000055;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .element-info-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #f0f0e8;
+            text-align: left;
+            max-height: 100px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .element-info-text::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .element-info-text::-webkit-scrollbar-track {
+            background: #2a3a44;
+            border-radius: 4px;
+        }
+
+        .element-info-text::-webkit-scrollbar-thumb {
+            background: #ffb347;
+            border-radius: 4px;
+        }
+
+        .info-placeholder {
+            color: #aaccee;
+            font-style: italic;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+
         .periodic-wrapper {
             background: rgba(20, 35, 45, 0.7);
             backdrop-filter: blur(4px);
@@ -100,7 +179,6 @@
             border: 1px solid rgba(255, 200, 100, 0.3);
         }
 
-        /* Responsive grid that always fits */
         .pt-grid {
             display: grid;
             grid-template-columns: repeat(18, minmax(0, 1fr));
@@ -117,6 +195,13 @@
             border: 1.5px solid #3a6a7a;
             cursor: pointer;
             min-height: 0;
+            position: relative;
+        }
+
+        .element-cell:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            border-color: #ffaa55;
         }
 
         .element-cell.empty-slot {
@@ -261,7 +346,14 @@
             cursor: not-allowed;
         }
 
-        /* Very small screens - adjust spacing */
+        .click-hint {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #88aacc;
+            margin-top: 5px;
+            margin-bottom: 8px;
+        }
+
         @media (max-width: 700px) {
             .periodic-wrapper {
                 padding: 0.5rem;
@@ -282,32 +374,14 @@
                 font-size: 1.1rem;
                 min-width: 55px;
             }
-            .status-bar {
-                padding: 0.4rem 0.8rem;
+            .element-info-symbol {
+                font-size: 1.2rem;
             }
-        }
-
-        @media (max-width: 550px) {
-            .atomic-number {
-                font-size: 0.5rem;
+            .element-info-name {
+                font-size: 1rem;
             }
-            .symbol-display {
-                font-size: 0.65rem;
-            }
-            .drag-items-container {
-                gap: 8px;
-            }
-        }
-
-        /* Tooltip for better UX */
-        .element-cell {
-            position: relative;
-        }
-        
-        /* Ensure grid is fully responsive */
-        @media (min-width: 1200px) {
-            .pt-grid {
-                gap: 4px;
+            .element-info-text {
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -316,7 +390,7 @@
 <div class="game-container">
     <div class="header">
         <h1>⚛️ Periodisk system · Plasser forkortelser ⚛️</h1>
-        <div class="sub">Dra forkortelsen til riktig rute i tabellen (atomnummer + navn vises)</div>
+        <div class="sub">📌 Klikk på et grunnstoff i tabellen for å lære om historie, bruk og forekomst | Dra forkortelser til riktig rute</div>
     </div>
 
     <div class="status-bar">
@@ -326,11 +400,18 @@
         <button class="reset-btn" id="resetGameBtn">🔄 Nytt spill</button>
     </div>
 
+    <!-- Fixed info box at top-center - shows info when element is clicked -->
+    <div id="elementInfoPanel" class="element-info-panel">
+        <div class="info-placeholder">✨ Klikk på et grunnstoff i tabellen for å lære om det ✨</div>
+    </div>
+
+    <div class="click-hint">👇 <strong>Klikk på et grunnstoff</strong> for å vise informasjon i feltet ovenfor 👇</div>
+
     <div class="periodic-wrapper">
         <div id="periodicGrid" class="pt-grid"></div>
     </div>
 
-    <div class="drag-area" id="dragArea">
+    <div class="drag-area">
         <div class="drag-title">📌 Dra disse 5 forkortelsene til riktig plass i tabellen 📌</div>
         <div id="dragSymbolsList" class="drag-items-container"></div>
         <div class="round-feedback" id="feedbackMsg"></div>
@@ -339,87 +420,87 @@
 </div>
 
 <script>
-    // Complete periodic table data with correct group positions (1-18 from left to right)
-    // Main groups: 1,2, then 3-12 (transition), then 13-18
+    // Complete periodic table data with rich information: history, uses, where found
+    // EVERY element has detailed info
     const elementsData = [
         // Periode 1
-        { atomic: 1, name: "Hydrogen", symbol: "H", period: 1, group: 1 },
-        { atomic: 2, name: "Helium", symbol: "He", period: 1, group: 18 },
+        { atomic: 1, name: "Hydrogen", symbol: "H", period: 1, group: 1, info: "💧 HYDROGEN: Det letteste og mest utbredte grunnstoffet i universet. Oppdaget av Henry Cavendish i 1766. Brukes til produksjon av ammoniakk (gjødsel), rakettdrivstoff, og hydrogenering av olje. Finnes i vann (H₂O) og alle organiske forbindelser." },
+        { atomic: 2, name: "Helium", symbol: "He", period: 1, group: 18, info: "🎈 HELIUM: Edelgass oppdaget i solens spektrum i 1868. Brukes til å fylle ballonger, kjøle superledere (MR-magneter), og i dykking. Finnes naturlig i naturgass, spesielt i USA og Qatar." },
         // Periode 2
-        { atomic: 3, name: "Litium", symbol: "Li", period: 2, group: 1 },
-        { atomic: 4, name: "Beryllium", symbol: "Be", period: 2, group: 2 },
-        { atomic: 5, name: "Bor", symbol: "B", period: 2, group: 13 },
-        { atomic: 6, name: "Karbon", symbol: "C", period: 2, group: 14 },
-        { atomic: 7, name: "Nitrogen", symbol: "N", period: 2, group: 15 },
-        { atomic: 8, name: "Oksygen", symbol: "O", period: 2, group: 16 },
-        { atomic: 9, name: "Fluor", symbol: "F", period: 2, group: 17 },
-        { atomic: 10, name: "Neon", symbol: "Ne", period: 2, group: 18 },
+        { atomic: 3, name: "Litium", symbol: "Li", period: 2, group: 1, info: "🔋 LITIUM: Oppdaget i 1817 av Johan Arfwedson. Brukes i oppladbare batterier (elbiler, mobiler), smørefett, og medisin mot depresjon. Finnes i mineraler som spodumen, hovedsakelig utvunnet i Australia og Chile." },
+        { atomic: 4, name: "Beryllium", symbol: "Be", period: 2, group: 2, info: "🛰️ BERYLLIUM: Oppdaget i 1798 av Louis-Nicolas Vauquelin. Brukes i lette legeringer for romfart, røntgenvinduer, og presisjonsinstrumenter. Finnes i mineralet beryl (smaragd og akvamarin)." },
+        { atomic: 5, name: "Bor", symbol: "B", period: 2, group: 13, info: "🧪 BOR: Oppdaget i 1808. Brukes i glassfiber, rengjøringsmidler, flammehemmere, og halvledere. Finnes i boraks i Tyrkia og USA. Viktig for plantenæring." },
+        { atomic: 6, name: "Karbon", symbol: "C", period: 2, group: 14, info: "✏️ KARBON: Kjent siden oldtiden. Grunnlaget for alt organisk liv. Brukes i stålproduksjon, plast, grafitt, diamant, og som brensel. Finnes i alle levende organismer, i atmosfæren som CO₂, og i fossile brensler." },
+        { atomic: 7, name: "Nitrogen", symbol: "N", period: 2, group: 15, info: "🌾 NITROGEN: Oppdaget i 1772 av Daniel Rutherford. Utgjør 78% av luften. Brukes i kunstgjødsel (Haber-prosessen), eksplosiver, frysing av mat (flytende nitrogen). Finnes fritt i atmosfæren." },
+        { atomic: 8, name: "Oksygen", symbol: "O", period: 2, group: 16, info: "🫁 OKSYGEN: Oppdaget av Scheele og Priestley på 1770-tallet. Nødvendig for respirasjon. Brukes i medisin, stålverk, rakettdrivstoff. Finnes fritt i luft (21%) og i vann (H₂O)." },
+        { atomic: 9, name: "Fluor", symbol: "F", period: 2, group: 17, info: "🪥 FLUOR: Isolert i 1886 av Henri Moissan. Brukes i tannkrem, teflon, kjølemidler. Finnes i mineralet flusspat (fluoritt). Svært reaktivt og etsende." },
+        { atomic: 10, name: "Neon", symbol: "Ne", period: 2, group: 18, info: "💡 NEON: Oppdaget i 1898 av Ramsay og Travers. Brukes i neonlys og reklameskilt. Finnes i spormengder i atmosfæren. Gir karakteristisk rød-orange glød i lysrør." },
         // Periode 3
-        { atomic: 11, name: "Natrium", symbol: "Na", period: 3, group: 1 },
-        { atomic: 12, name: "Magnesium", symbol: "Mg", period: 3, group: 2 },
-        { atomic: 13, name: "Aluminium", symbol: "Al", period: 3, group: 13 },
-        { atomic: 14, name: "Silisium", symbol: "Si", period: 3, group: 14 },
-        { atomic: 15, name: "Fosfor", symbol: "P", period: 3, group: 15 },
-        { atomic: 16, name: "Svovel", symbol: "S", period: 3, group: 16 },
-        { atomic: 17, name: "Klor", symbol: "Cl", period: 3, group: 17 },
-        { atomic: 18, name: "Argon", symbol: "Ar", period: 3, group: 18 },
-        // Periode 4 (med overgangsmetaller)
-        { atomic: 19, name: "Kalium", symbol: "K", period: 4, group: 1 },
-        { atomic: 20, name: "Kalsium", symbol: "Ca", period: 4, group: 2 },
-        { atomic: 21, name: "Scandium", symbol: "Sc", period: 4, group: 3 },
-        { atomic: 22, name: "Titan", symbol: "Ti", period: 4, group: 4 },
-        { atomic: 23, name: "Vanadium", symbol: "V", period: 4, group: 5 },
-        { atomic: 24, name: "Krom", symbol: "Cr", period: 4, group: 6 },
-        { atomic: 25, name: "Mangan", symbol: "Mn", period: 4, group: 7 },
-        { atomic: 26, name: "Jern", symbol: "Fe", period: 4, group: 8 },
-        { atomic: 27, name: "Kobolt", symbol: "Co", period: 4, group: 9 },
-        { atomic: 28, name: "Nikkel", symbol: "Ni", period: 4, group: 10 },
-        { atomic: 29, name: "Kobber", symbol: "Cu", period: 4, group: 11 },
-        { atomic: 30, name: "Sink", symbol: "Zn", period: 4, group: 12 },
-        { atomic: 31, name: "Gallium", symbol: "Ga", period: 4, group: 13 },
-        { atomic: 32, name: "Germanium", symbol: "Ge", period: 4, group: 14 },
-        { atomic: 33, name: "Arsen", symbol: "As", period: 4, group: 15 },
-        { atomic: 34, name: "Selen", symbol: "Se", period: 4, group: 16 },
-        { atomic: 35, name: "Brom", symbol: "Br", period: 4, group: 17 },
-        { atomic: 36, name: "Krypton", symbol: "Kr", period: 4, group: 18 },
+        { atomic: 11, name: "Natrium", symbol: "Na", period: 3, group: 1, info: "🧂 NATRIUM: Isolert av Humphry Davy i 1807. Brukes i bordsalt (NaCl), gatelys, såpeproduksjon. Finnes i store mengder i havvann og i mineralet steinsalt. Essensielt for nervefunksjon." },
+        { atomic: 12, name: "Magnesium", symbol: "Mg", period: 3, group: 2, info: "🚗 MAGNESIUM: Oppdaget i 1808. Brukes i lette bildelegeringer, pyroteknikk, kosttilskudd. Finnes i havvann, dolomitt og magnesitt. Viktig for fotosyntese (klorofyll)." },
+        { atomic: 13, name: "Aluminium", symbol: "Al", period: 3, group: 13, info: "🥫 ALUMINIUM: Isolert i 1825. Brukes i drikkebokser, fly, bygningsmaterialer, folie. Det vanligste metallet i jordskorpen. Finnes i bauxitt, hovedsakelig utvunnet i Australia og Guinea." },
+        { atomic: 14, name: "Silisium", symbol: "Si", period: 3, group: 14, info: "💻 SILISIUM: Oppdaget i 1824. Grunnlaget for moderne elektronikk (databrikker, solceller). Nest vanligste grunnstoff i jordskorpen. Finnes i sand, kvarts og silikatmineraler." },
+        { atomic: 15, name: "Fosfor", symbol: "P", period: 3, group: 15, info: "🔥 FOSFOR: Oppdaget i 1669 av Hennig Brand. Brukes i fyrstikker, gjødsel, brannbomber. Finnes i mineralet apatitt. Viktig i DNA og ATP (energioverføring)." },
+        { atomic: 16, name: "Svovel", symbol: "S", period: 3, group: 16, info: "⚡ SVOVEL: Kjent siden oldtiden. Brukes til svovelsyre (industri), gummi (vulkanisering). Finnes fritt i vulkanske områder og i sulfidmineraler. Lukter som råtne egg." },
+        { atomic: 17, name: "Klor", symbol: "Cl", period: 3, group: 17, info: "🧴 KLOR: Oppdaget i 1774. Brukes til vannrensing, PVC-plast, blekemidler. Finnes i havvann som klorid (NaCl). Grønn-gul giftig gass." },
+        { atomic: 18, name: "Argon", symbol: "Ar", period: 3, group: 18, info: "🛡️ ARGON: Oppdaget i 1894. Brukes som beskyttelsesgass ved sveising, i lyspærer. Finnes i atmosfæren (0,93%). Tredje vanligste edelgass." },
+        // Periode 4
+        { atomic: 19, name: "Kalium", symbol: "K", period: 4, group: 1, info: "🍌 KALIUM: Oppdaget i 1807. Brukes i gjødsel (potaske), blodtrykksmedisin. Finnes i mineraler som sylvin og i planter. Essensielt for nerve- og muskelfunksjon." },
+        { atomic: 20, name: "Kalsium", symbol: "Ca", period: 4, group: 2, info: "🦴 KALSIUM: Kjent siden oldtiden. Brukes i sement, kalk i jordbruk. Finnes i kalkstein, marmor og skjell. Viktig for bein og tenner." },
+        { atomic: 21, name: "Scandium", symbol: "Sc", period: 4, group: 3, info: "🏅 SCANDIUM: Oppdaget i 1879. Brukes i lette aluminiumslegeringer for sykkelrammer. Finnes i sjeldne mineraler i Skandinavia og Madagaskar." },
+        { atomic: 22, name: "Titan", symbol: "Ti", period: 4, group: 4, info: "✈️ TITAN: Oppdaget i 1791. Brukes i flymotorer, implantater, hvitt pigment. Finnes i mineralene ilmenitt og rutil. Biokompatibelt og sterkt." },
+        { atomic: 23, name: "Vanadium", symbol: "V", period: 4, group: 5, info: "🔩 VANADIUM: Oppdaget i 1801. Brukes i høyfast stål, verktøy. Finnes i vanadinitt og i jernmalm. Oppkalt etter Vanadis (nordisk gudinne)." },
+        { atomic: 24, name: "Krom", symbol: "Cr", period: 4, group: 6, info: "✨ KROM: Oppdaget i 1797. Brukes i rustfritt stål, bilfelger, garving av lær. Finnes i kromitt. Gir rubin sin røde farge." },
+        { atomic: 25, name: "Mangan", symbol: "Mn", period: 4, group: 7, info: "🔋 MANGAN: Oppdaget i 1774. Brukes i stålproduksjon, tørrbatterier. Finnes i pyrolusitt. Viktig for å fjerne oksygen i stål." },
+        { atomic: 26, name: "Jern", symbol: "Fe", period: 4, group: 8, info: "🏗️ JERN: Kjent siden bronsealderen. Viktigste metall for industri. Brukes i byggestål, biler. Finnes i hematitt og magnetitt. Essensielt for hemoglobin i blodet." },
+        { atomic: 27, name: "Kobolt", symbol: "Co", period: 4, group: 9, info: "🔋 KOBALT: Oppdaget i 1735. Brukes i litium-ion-batterier, superlegeringer. Finnes i koboltitt. Gir blåfarge i glass og keramikk." },
+        { atomic: 28, name: "Nikkel", symbol: "Ni", period: 4, group: 10, info: "💰 NIKKEL: Oppdaget i 1751. Brukes i mynter, rustfritt stål. Finnes i lateritt og sulfidmalmer. Oppkalt etter «kobbernikkel»." },
+        { atomic: 29, name: "Kobber", symbol: "Cu", period: 4, group: 11, info: "⚡ KOBER: Kjent siden oldtiden. Brukes i elektriske ledninger, rør, mynter. Finnes som malm (kalkopyritt). Brukt i bronse og messing." },
+        { atomic: 30, name: "Sink", symbol: "Zn", period: 4, group: 12, info: "🔩 SINK: Kjent siden oldtiden. Brukes til galvanisering, solkrem, batterier. Finnes i sinkblende (sfaleritt). Viktig for immunsystemet." },
+        { atomic: 31, name: "Gallium", symbol: "Ga", period: 4, group: 13, info: "📱 GALLIUM: Oppdaget i 1875. Smelter i håndflaten. Brukes i halvledere, LED-lys. Finnes i spor i bauxitt. Oppkalt etter Gallia (Frankrike)." },
+        { atomic: 32, name: "Germanium", symbol: "Ge", period: 4, group: 14, info: "🔍 GERMANIUM: Oppdaget i 1886. Brukes i fiberoptikk, infrarød optikk. Finnes i argyroditt. Oppkalt etter Tyskland (Germania)." },
+        { atomic: 33, name: "Arsen", symbol: "As", period: 4, group: 15, info: "⚠️ ARSEN: Kjent siden oldtiden. Brukes i treimpregnering, halvledere. Finnes i arsenopyritt. Berømt som gift i historien." },
+        { atomic: 34, name: "Selen", symbol: "Se", period: 4, group: 16, info: "☀️ SELEN: Oppdaget i 1817. Brukes i solceller, kopimaskiner. Finnes i sulfidmalmer. Viktig i kosttilskudd." },
+        { atomic: 35, name: "Brom", symbol: "Br", period: 4, group: 17, info: "🔥 BROM: Oppdaget i 1826. Rødbrun væske. Brukes i flammehemmere, fotokjemikalier. Finnes i havvann og dødehavssalter." },
+        { atomic: 36, name: "Krypton", symbol: "Kr", period: 4, group: 18, info: "💡 KRYPTON: Oppdaget i 1898. Brukes i høyytelses lyspærer. Finnes i atmosfæren. Navnet kommer fra gresk «kryptos» (skjult)." },
         // Periode 5
-        { atomic: 37, name: "Rubidium", symbol: "Rb", period: 5, group: 1 },
-        { atomic: 38, name: "Strontium", symbol: "Sr", period: 5, group: 2 },
-        { atomic: 39, name: "Yttrium", symbol: "Y", period: 5, group: 3 },
-        { atomic: 40, name: "Zirkonium", symbol: "Zr", period: 5, group: 4 },
-        { atomic: 41, name: "Niob", symbol: "Nb", period: 5, group: 5 },
-        { atomic: 42, name: "Molybden", symbol: "Mo", period: 5, group: 6 },
-        { atomic: 43, name: "Technetium", symbol: "Tc", period: 5, group: 7 },
-        { atomic: 44, name: "Rutenium", symbol: "Ru", period: 5, group: 8 },
-        { atomic: 45, name: "Rhodium", symbol: "Rh", period: 5, group: 9 },
-        { atomic: 46, name: "Palladium", symbol: "Pd", period: 5, group: 10 },
-        { atomic: 47, name: "Sølv", symbol: "Ag", period: 5, group: 11 },
-        { atomic: 48, name: "Kadmium", symbol: "Cd", period: 5, group: 12 },
-        { atomic: 49, name: "Indium", symbol: "In", period: 5, group: 13 },
-        { atomic: 50, name: "Tinn", symbol: "Sn", period: 5, group: 14 },
-        { atomic: 51, name: "Antimon", symbol: "Sb", period: 5, group: 15 },
-        { atomic: 52, name: "Tellur", symbol: "Te", period: 5, group: 16 },
-        { atomic: 53, name: "Jod", symbol: "I", period: 5, group: 17 },
-        { atomic: 54, name: "Xenon", symbol: "Xe", period: 5, group: 18 },
-        // Periode 6 (forenklet - viktigste)
-        { atomic: 55, name: "Cesium", symbol: "Cs", period: 6, group: 1 },
-        { atomic: 56, name: "Barium", symbol: "Ba", period: 6, group: 2 },
-        { atomic: 57, name: "Lantan", symbol: "La", period: 6, group: 3 },
-        { atomic: 72, name: "Hafnium", symbol: "Hf", period: 6, group: 4 },
-        { atomic: 73, name: "Tantal", symbol: "Ta", period: 6, group: 5 },
-        { atomic: 74, name: "Wolfram", symbol: "W", period: 6, group: 6 },
-        { atomic: 75, name: "Rhenium", symbol: "Re", period: 6, group: 7 },
-        { atomic: 76, name: "Osmium", symbol: "Os", period: 6, group: 8 },
-        { atomic: 77, name: "Iridium", symbol: "Ir", period: 6, group: 9 },
-        { atomic: 78, name: "Platina", symbol: "Pt", period: 6, group: 10 },
-        { atomic: 79, name: "Gull", symbol: "Au", period: 6, group: 11 },
-        { atomic: 80, name: "Kvikksølv", symbol: "Hg", period: 6, group: 12 },
-        { atomic: 81, name: "Tallium", symbol: "Tl", period: 6, group: 13 },
-        { atomic: 82, name: "Bly", symbol: "Pb", period: 6, group: 14 },
-        { atomic: 83, name: "Vismut", symbol: "Bi", period: 6, group: 15 },
-        { atomic: 84, name: "Polonium", symbol: "Po", period: 6, group: 16 },
-        { atomic: 85, name: "Astat", symbol: "At", period: 6, group: 17 },
-        { atomic: 86, name: "Radon", symbol: "Rn", period: 6, group: 18 }
+        { atomic: 37, name: "Rubidium", symbol: "Rb", period: 5, group: 1, info: "⏱️ RUBIDIUM: Oppdaget i 1861. Brukes i atomklokker, fysikkforskning. Finnes i mineralet lepidolitt. Gir fiolett farge i fyrverkeri." },
+        { atomic: 38, name: "Strontium", symbol: "Sr", period: 5, group: 2, info: "🎆 STRONTIUM: Oppdaget i 1790. Gir rød farge i fyrverkeri. Brukes i ferrittmagneter. Finnes i mineralet strontianitt." },
+        { atomic: 39, name: "Yttrium", symbol: "Y", period: 5, group: 3, info: "💎 YTTRIUM: Oppdaget i 1794. Brukes i superledere, lasere, LED-skjermer. Finnes i sjeldne jordartsmineraler i Sverige." },
+        { atomic: 40, name: "Zirkonium", symbol: "Zr", period: 5, group: 4, info: "⚛️ ZIRKONIUM: Oppdaget i 1789. Brukes i atomreaktorer, kunstige edelsteiner (kubisk zirkonia). Finnes i mineralet zirkon." },
+        { atomic: 41, name: "Niob", symbol: "Nb", period: 5, group: 5, info: "🏗️ NIOB: Oppdaget i 1801. Brukes i superlegeringer for rakettmotorer. Finnes i mineralet columbitt. Oppkalt etter Niobe i gresk mytologi." },
+        { atomic: 42, name: "Molybden", symbol: "Mo", period: 5, group: 6, info: "🔩 MOLYBDEN: Oppdaget i 1778. Brukes i stållegeringer, smøremidler. Finnes i molybdenitt. Viktig i verktøystål." },
+        { atomic: 43, name: "Technetium", symbol: "Tc", period: 5, group: 7, info: "🏥 TECHNETIUM: Første kunstig fremstilte grunnstoff (1937). Brukes i medisinsk bildebehandling (kreftdiagnostikk). Finnes ikke stabilt i naturen." },
+        { atomic: 44, name: "Rutenium", symbol: "Ru", period: 5, group: 8, info: "✍️ RUTENIUM: Oppdaget i 1844. Brukes i blekkpennspisser, elektriske kontakter. Finnes i platina-malm i Uralfjellene." },
+        { atomic: 45, name: "Rhodium", symbol: "Rh", period: 5, group: 9, info: "🚗 RHODIUM: Oppdaget i 1803. Brukes i bilkatalysatorer, smykker (rhodiumplettering). Finnes i platina-malm. Verdens dyreste edelmetall." },
+        { atomic: 46, name: "Palladium", symbol: "Pd", period: 5, group: 10, info: "🔑 PALLADIUM: Oppdaget i 1803. Brukes i bilkatalysatorer, tannlegeringer. Finnes i platina-malm. Absorberer hydrogen." },
+        { atomic: 47, name: "Sølv", symbol: "Ag", period: 5, group: 11, info: "💍 SØLV: Kjent siden oldtiden. Brukes i smykker, antibakterielle belegg. Finnes i sølvglans og som biprodukt fra gruvedrift." },
+        { atomic: 48, name: "Kadmium", symbol: "Cd", period: 5, group: 12, info: "🔋 KADMIUM: Oppdaget i 1817. Brukes i NiCd-batterier. Finnes som biprodukt fra sinkproduksjon. Giftig metall." },
+        { atomic: 49, name: "Indium", symbol: "In", period: 5, group: 13, info: "📱 INDIUM: Oppdaget i 1863. Brukes i berøringsskjermer (ITO), loddelegeringer. Finnes i sinkmalm." },
+        { atomic: 50, name: "Tinn", symbol: "Sn", period: 5, group: 14, info: "🥫 TINN: Kjent siden bronsealderen. Brukes i hermetikkbokser, loddetinn, bronse. Finnes i mineralet kassiteritt." },
+        { atomic: 51, name: "Antimon", symbol: "Sb", period: 5, group: 15, info: "🔥 ANTIMON: Kjent siden oldtiden. Brukes i flammehemmere, blybatterier. Finnes i stibnitt. Brukt i kosmetikk i oldtidens Egypt." },
+        { atomic: 52, name: "Tellur", symbol: "Te", period: 5, group: 16, info: "💿 TELLUR: Oppdaget i 1782. Brukes i CD-er, solceller. Finnes i gullmalmer. Navnet betyr «jord» på latin." },
+        { atomic: 53, name: "Jod", symbol: "I", period: 5, group: 17, info: "🧂 JOD: Oppdaget i 1811. Brukes i jodisert salt, desinfeksjon. Finnes i tang og sjøvann. Viktig for skjoldbruskkjertelen." },
+        { atomic: 54, name: "Xenon", symbol: "Xe", period: 5, group: 18, info: "🚗 XENON: Oppdaget i 1898. Brukes i billykter, anestesi. Finnes i atmosfæren. Navnet betyr «fremmed» på gresk." },
+        // Periode 6
+        { atomic: 55, name: "Cesium", symbol: "Cs", period: 6, group: 1, info: "⏱️ CESIUM: Oppdaget i 1860. Brukes i atomklokker, oljeutvinning. Finnes i mineralet pollucitt. Svært reaktivt, smelter i håndflaten." },
+        { atomic: 56, name: "Barium", symbol: "Ba", period: 6, group: 2, info: "🩻 BARIUM: Oppdaget i 1808. Brukes i røntgenkontrast (bariumgrøt), fyrverkeri. Finnes i barytt (tungspat)." },
+        { atomic: 57, name: "Lantan", symbol: "La", period: 6, group: 3, info: "🔬 LANTAN: Oppdaget i 1839. Brukes i kameraoptikk, hydrogenlagring. Finnes i sjeldne jordartsmineraler. Oppkalt etter det greske ordet «lanthanein» (skjult)." },
+        { atomic: 72, name: "Hafnium", symbol: "Hf", period: 6, group: 4, info: "⚛️ HAFNIUM: Oppdaget i 1923. Brukes i kontrollstaver i atomreaktorer. Finnes i zirkonmalm. Oppkalt etter København (Hafnia på latin)." },
+        { atomic: 73, name: "Tantal", symbol: "Ta", period: 6, group: 5, info: "📱 TANTAL: Oppdaget i 1802. Brukes i kondensatorer i mobiltelefoner, kirurgiske implantater. Finnes i tantalitt. Oppkalt etter Tantalos fra gresk mytologi." },
+        { atomic: 74, name: "Wolfram", symbol: "W", period: 6, group: 6, info: "💡 WOLFRAM: Oppdaget i 1783. Brukes i glødetråd i pærer, verktøystål. Finnes i scheelitt og wolframitt. Høyest smeltepunkt av alle metaller." },
+        { atomic: 75, name: "Rhenium", symbol: "Re", period: 6, group: 7, info: "✈️ RHENIUM: Oppdaget i 1925. Brukes i turbinblader i jetmotorer. Finnes i molybdenmalm. Et av de sjeldneste grunnstoffene." },
+        { atomic: 76, name: "Osmium", symbol: "Os", period: 6, group: 8, info: "✒️ OSMIUM: Oppdaget i 1803. Tyngste grunnstoffet. Brukes i pennespisser. Finnes i platina-malm. Navnet betyr «lukt» på gresk." },
+        { atomic: 77, name: "Iridium", symbol: "Ir", period: 6, group: 9, info: "🔥 IRIDIUM: Oppdaget i 1803. Brukes i tennplugger, romfart. Finnes i meteoritter og platina-malm. Oppkalt etter Iris (regnbuegudinne)." },
+        { atomic: 78, name: "Platina", symbol: "Pt", period: 6, group: 10, info: "💍 PLATINA: Oppdaget på 1700-tallet. Brukes i smykker, katalysatorer, kreftmedisin (cisplatin). Finnes i alluvial sand i Sør-Afrika og Russland." },
+        { atomic: 79, name: "Gull", symbol: "Au", period: 6, group: 11, info: "💰 GULL: Kjent siden oldtiden. Brukes i smykker, elektronikk, investering. Finnes i årer og elveleier over hele verden. Korrosjonsfritt edelt metall." },
+        { atomic: 80, name: "Kvikksølv", symbol: "Hg", period: 6, group: 12, info: "🌡️ KVIKKSØLV: Kjent siden oldtiden. Flytende metall. Brukes i termometre (tidligere), tannfyllinger. Finnes i sinober (HgS). Svært giftig." },
+        { atomic: 81, name: "Tallium", symbol: "Tl", period: 6, group: 13, info: "⚛️ TALLIUM: Oppdaget i 1861. Brukes i elektronikk. Finnes i sinkmalm. Navnet betyr «grønn gren» på gresk (grønn linje i spektrum)." },
+        { atomic: 82, name: "Bly", symbol: "Pb", period: 6, group: 14, info: "🔋 BLY: Kjent siden oldtiden. Brukes i bilbatterier, strålebeskyttelse. Finnes i blyglans (galenitt). Romerne brukte det til vannrør." },
+        { atomic: 83, name: "Vismut", symbol: "Bi", period: 6, group: 15, info: "💊 VISMUT: Kjent siden middelalderen. Brukes i magesyrenøytraliserende, erstatning for bly. Finnes i vismutglans. Danner vakre krystaller." },
+        { atomic: 84, name: "Polonium", symbol: "Po", period: 6, group: 16, info: "⚛️ POLONIUM: Oppdaget av Marie Curie i 1898. Brukes som varmekilde i romfart. Finnes i uranmalm. Oppkalt etter Polen." },
+        { atomic: 85, name: "Astat", symbol: "At", period: 6, group: 17, info: "🔬 ASTAT: Oppdaget i 1940. Brukes i eksperimentell kreftbehandling. Et av de sjeldneste naturlige grunnstoffene. Navnet betyr «ustabil»." },
+        { atomic: 86, name: "Radon", symbol: "Rn", period: 6, group: 18, info: "🏠 RADON: Oppdaget i 1900. Radioaktiv edelgass. Måles i boliger for å unngå helsefare. Finnes i bakken fra uran-nedbrytning." }
     ];
 
     // Game state
@@ -439,8 +520,24 @@
     const feedbackMsgDiv = document.getElementById("feedbackMsg");
     const nextRoundBtn = document.getElementById("nextRoundBtn");
     const resetBtn = document.getElementById("resetGameBtn");
+    const infoPanel = document.getElementById("elementInfoPanel");
 
-    // Render full periodic table with responsive grid
+    // Display element info in the fixed top-center panel (called ONLY on click)
+    function showElementInfo(element) {
+        infoPanel.innerHTML = `
+            <div class="element-info-header">
+                <span class="element-info-symbol">${element.symbol}</span>
+                <span class="element-info-name">${element.name}</span>
+                <span class="element-info-number">Atomnummer ${element.atomic}</span>
+            </div>
+            <div class="element-info-text">${element.info}</div>
+        `;
+    }
+
+    function clearElementInfo() {
+        infoPanel.innerHTML = `<div class="info-placeholder">✨ Klikk på et grunnstoff i tabellen for å lære om det ✨</div>`;
+    }
+
     function renderPeriodicTable() {
         periodicGridDiv.innerHTML = "";
         
@@ -461,6 +558,12 @@
                     cell.setAttribute("data-symbol", element.symbol);
                     cell.setAttribute("data-name", element.name);
                     
+                    // Show info ONLY on click, not on hover
+                    cell.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        showElementInfo(element);
+                    });
+                    
                     const symbolHtml = isCompleted ? 
                         `<div class="symbol-display">${element.symbol}</div>` : 
                         `<div class="symbol-display">⬚ ⬚</div>`;
@@ -471,7 +574,6 @@
                         ${symbolHtml}
                     `;
                     
-                    // Drop event listeners
                     cell.addEventListener("dragover", (e) => {
                         e.preventDefault();
                         e.dataTransfer.dropEffect = "move";
@@ -484,7 +586,6 @@
                     
                     periodicGridDiv.appendChild(cell);
                 } else {
-                    // Empty cell for positions without elements
                     const emptyCell = document.createElement("div");
                     emptyCell.className = "element-cell";
                     emptyCell.style.background = "rgba(30,40,50,0.2)";
@@ -497,7 +598,6 @@
         }
     }
     
-    // Handle drop on element cell
     function handleDrop(element) {
         if (!dragData.active || !dragData.symbol) {
             feedbackMsgDiv.innerHTML = "⚠️ Dra en forkortelse fra listen under tabellen!";
@@ -518,18 +618,16 @@
         }
         
         if (dragData.symbol === element.symbol) {
-            // Correct match
             challengeItem.placed = true;
             completedElements.add(element.atomic);
             totalCorrect++;
-            
             activeDragItems = activeDragItems.filter(item => item.atomic !== dragData.atomic);
             
             updateStats();
             renderPeriodicTable();
             renderDragSymbols();
             
-            feedbackMsgDiv.innerHTML = `✅ Riktig! ${element.name} (${element.symbol}) plassert riktig! 🎉`;
+            feedbackMsgDiv.innerHTML = `✅ Riktig! ${element.name} (${element.symbol}) plassert! 🎉`;
             
             const allPlaced = currentChallengeElements.every(e => e.placed === true);
             if (allPlaced) {
@@ -538,14 +636,12 @@
             }
         } else {
             feedbackMsgDiv.innerHTML = `❌ Feil! "${dragData.symbol}" er ikke forkortelsen for ${element.name}. Prøv igjen!`;
-            
             const cell = document.querySelector(`.element-cell[data-atomic="${element.atomic}"]`);
             if (cell) {
                 cell.style.transform = "translateX(4px)";
                 setTimeout(() => { if(cell) cell.style.transform = ""; }, 150);
             }
         }
-        
         resetDragState();
     }
     
@@ -559,7 +655,6 @@
         roundNumberSpan.innerText = currentRound;
     }
     
-    // Render draggable symbols
     function renderDragSymbols() {
         dragSymbolsContainer.innerHTML = "";
         
@@ -607,7 +702,6 @@
         });
     }
     
-    // Generate new round with 5 random uncompleted elements
     function generateNewRound() {
         const notCompleted = elementsData.filter(el => !completedElements.has(el.atomic));
         
@@ -618,7 +712,6 @@
             return false;
         }
         
-        // Shuffle and pick up to 5 elements
         const shuffled = [...notCompleted];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -640,7 +733,6 @@
             symbol: el.symbol
         }));
         
-        // Shuffle active drag items for better gameplay
         for (let i = activeDragItems.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [activeDragItems[i], activeDragItems[j]] = [activeDragItems[j], activeDragItems[i]];
@@ -649,13 +741,11 @@
         renderPeriodicTable();
         renderDragSymbols();
         
-        feedbackMsgDiv.innerHTML = `🔬 Runde ${currentRound}: Plasser disse ${activeDragItems.length} forkortelsene i de uthevede rutene! 🔬`;
+        feedbackMsgDiv.innerHTML = `🔬 Runde ${currentRound}: Plasser disse ${activeDragItems.length} forkortelsene i de uthevede rutene! Klikk på et grunnstoff for å lære mer! 🔬`;
         nextRoundBtn.disabled = true;
-        
         return true;
     }
     
-    // Go to next round
     function nextRound() {
         const allPlaced = currentChallengeElements.every(e => e.placed === true);
         if (!allPlaced) {
@@ -674,7 +764,6 @@
         generateNewRound();
     }
     
-    // Reset entire game
     function resetGame() {
         completedElements.clear();
         totalCorrect = 0;
@@ -682,21 +771,19 @@
         currentChallengeElements = [];
         activeDragItems = [];
         resetDragState();
+        clearElementInfo();
         
         updateStats();
         generateNewRound();
-        feedbackMsgDiv.innerHTML = "Spillet er tilbakestilt! Dra forkortelsene til riktig rute i tabellen.";
+        feedbackMsgDiv.innerHTML = "Spillet er tilbakestilt! Dra forkortelsene til riktig rute. Klikk på et grunnstoff for å lære mer!";
     }
     
-    // Initialize
     totalElementsCountSpan.innerText = elementsData.length;
     resetGame();
     
-    // Event listeners
     nextRoundBtn.addEventListener("click", nextRound);
     resetBtn.addEventListener("click", resetGame);
     
-    // Prevent default drag on page
     window.addEventListener("dragstart", (e) => {
         if (!e.target.closest(".drag-symbol")) {
             e.preventDefault();
