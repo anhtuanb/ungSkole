@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kjemisk Balanse – Én reaksjon om gangen med hint</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0eaf4 0%, #cfdef3 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset;
+            max-width: 800px;
+            width: 100%;
+            padding: 1.8rem 2rem 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f4870, #2a6f8f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-top: 0;
+            margin-bottom: 0.4rem;
+            display: inline-block;
+        }
+
+        .sub {
+            color: #2c3e66;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .level-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #eef2fa;
+            padding: 12px 20px;
+            border-radius: 60px;
+        }
+
+        .level-text {
+            font-weight: 700;
+            background: #1e3a5f;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        .progress-badge {
+            background: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.85rem;
+        }
+
+        .reaction-card {
+            background: #f8fafd;
+            border-radius: 2rem;
+            padding: 1.8rem 1.5rem;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 4px #0001, 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid #cbdde9;
+        }
+
+        .equation {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
+            gap: 0.6rem 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .coeff {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            background: #ffffffcc;
+            padding: 0 8px;
+            border-radius: 48px;
+        }
+
+        .coeff input {
+            width: 80px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            font-family: monospace;
+            background: #fffef7;
+            border: 2px solid #c0d4e8;
+            border-radius: 36px;
+            padding: 8px 0;
+            transition: 0.1s linear;
+            color: #0a2b3e;
+        }
+
+        .coeff input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+
+        .coeff input::placeholder {
+            color: #a0bbd0;
+            font-size: 1.2rem;
+            font-weight: normal;
+            opacity: 0.7;
+        }
+
+        .compound {
+            font-weight: 700;
+            background: #eef3fc;
+            padding: 4px 12px;
+            border-radius: 48px;
+            letter-spacing: 0.3px;
+            font-size: 1.2rem;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c6e9e;
+            margin: 0 5px;
+        }
+
+        .plus {
+            font-weight: 800;
+            color: #547e9e;
+            font-size: 1.8rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0 15px;
+        }
+
+        button {
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            background: #2c3e66;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-family: inherit;
+        }
+
+        button:hover:not(:disabled) {
+            background: #1f4b6e;
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-btn {
+            background: #d97706;
+        }
+
+        .hint-btn:hover:not(:disabled) {
+            background: #b85e00;
+        }
+
+        .next-btn {
+            background: #1f6e43;
+        }
+
+        .reset-btn {
+            background: #5a6e7c;
+        }
+
+        .feedback {
+            background: #e9f0f5;
+            border-radius: 2rem;
+            padding: 14px 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 6px solid #3b82f6;
+            transition: all 0.2s;
+        }
+
+        .feedback.correct {
+            background: #dff3e3;
+            border-left-color: #2b9348;
+            color: #145c2e;
+        }
+
+        .feedback.wrong {
+            background: #ffe6e5;
+            border-left-color: #e11d48;
+            color: #9b1c2c;
+        }
+
+        .feedback.hint-show {
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .hint-container {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            background: #fffbeb;
+            border-radius: 1.5rem;
+            padding: 12px 16px;
+            display: none;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .hint-container.show {
+            display: block;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 24px;
+            color: #4a627a;
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 1.2rem; }
+            .coeff input { width: 60px; font-size: 1.3rem; }
+            .compound { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h1>⚖️ Balanser kjemiske ligninger</h1>
+        <span style="font-size: 1.5rem;">🧪✨</span>
+    </div>
+    <div class="sub">📌 Én reaksjon om gangen – fyll ut manglende koeffisienter. Få hint om du står fast!</div>
+
+    <div class="level-badge">
+        <span class="level-text" id="levelIndicator">Nivå 1 / 4</span>
+        <span class="progress-badge" id="progressIndicator">Reaksjon 1 / 4</span>
+    </div>
+
+    <div id="reactionContainer">
+        <!-- Dynamisk generert reaksjonskort -->
+    </div>
+
+    <div class="button-group">
+        <button id="checkBtn">🔍 Sjekk svar</button>
+        <button id="hintBtn" class="hint-btn">💡 Vis hint</button>
+        <button id="nextBtn" class="next-btn" disabled>🔒 Neste reaksjon</button>
+        <button id="resetBtn" class="reset-btn">🔄 Nullstill</button>
+    </div>
+
+    <div id="feedbackArea" class="feedback">
+        ✏️ Fyll ut koeffisientene (tomme felt = ?). Trykk "Sjekk svar".
+    </div>
+    <div id="hintPanel" class="hint-container"></div>
+    <footer>
+        💡 Tips: Koeffisienter skal være hele positive tall. Etter feil får du prøve igjen uten å få vite fasit.
+    </footer>
+</div>
+
+<script>
+    // ---------- REAKSJONER FORDELT PÅ NIVÅER ----------
+    // Hvert nivå: array av reaksjoner
+    // Viser én reaksjon om gangen. Bruker må fullføre alle i nivået for å gå til neste nivå.
+    const LEVELS = [
+        { // NIVÅ 1: enkle reaksjoner
+            name: "Grunnleggende",
+            reactions: [
+                { left: [{ compound: "H₂" }, { compound: "O₂" }], right: [{ compound: "H₂O" }], correctCoeffs: [2, 1, 2], hint: "Prøv å sette 2 foran H₂O, og juster H₂ og O₂ slik at antall atomer stemmer på begge sider." },
+                { left: [{ compound: "N₂" }, { compound: "H₂" }], right: [{ compound: "NH₃" }], correctCoeffs: [1, 3, 2], hint: "Nitrogenmolekyler (N₂) trenger 3 H₂ for å lage 2 NH₃." },
+                { left: [{ compound: "C" }, { compound: "O₂" }], right: [{ compound: "CO₂" }], correctCoeffs: [1, 1, 1], hint: "Forbrenning av karbon: ett karbonatom og ett oksygenmolekyl gir ett CO₂-molekyl." },
+                { left: [{ compound: "H₂" }, { compound: "Cl₂" }], right: [{ compound: "HCl" }], correctCoeffs: [1, 1, 2], hint: "Hydrogen og klor reagerer i forhold 1:1 og danner to molekyler HCl." }
+            ]
+        },
+        { // NIVÅ 2: forbrenning
+            name: "Forbrenning",
+            reactions: [
+                { left: [{ compound: "CH₄" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Metan + oksygen → karbondioksid + vann. Balanser karbon først, deretter hydrogen, til slutt oksygen." },
+                { left: [{ compound: "C₂H₆" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [2, 7, 4, 6], hint: "Etan: 2 C₂H₆ trenger 7 O₂ for å gi 4 CO₂ og 6 H₂O." },
+                { left: [{ compound: "Mg" }, { compound: "O₂" }], right: [{ compound: "MgO" }], correctCoeffs: [2, 1, 2], hint: "Magnesium oksiderer: 2 Mg + O₂ → 2 MgO." },
+                { left: [{ compound: "Al" }, { compound: "O₂" }], right: [{ compound: "Al₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Aluminium + oksygen gir aluminiumoksid: 4 Al + 3 O₂ → 2 Al₂O₃." }
+            ]
+        },
+        { // NIVÅ 3: mer utfordrende
+            name: "Metaller & ammoniakk",
+            reactions: [
+                { left: [{ compound: "Fe" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Jern rust: 4 jernatomer + 3 oksygenmolekyler → 2 jernoksid (Fe₂O₃)." },
+                { left: [{ compound: "NH₃" }, { compound: "O₂" }], right: [{ compound: "NO" }, { compound: "H₂O" }], correctCoeffs: [4, 5, 4, 6], hint: "Amoniakk + oksygen: 4 NH₃ + 5 O₂ → 4 NO + 6 H₂O." },
+                { left: [{ compound: "C₃H₈" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 5, 3, 4], hint: "Propan: C₃H₈ + 5 O₂ → 3 CO₂ + 4 H₂O." },
+                { left: [{ compound: "Na" }, { compound: "H₂O" }], right: [{ compound: "NaOH" }, { compound: "H₂" }], correctCoeffs: [2, 2, 2, 1], hint: "Natrium + vann: 2 Na + 2 H₂O → 2 NaOH + H₂." }
+            ]
+        },
+        { // NIVÅ 4: avansert
+            name: "Avansert",
+            reactions: [
+                { left: [{ compound: "C₂H₅OH" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 3, 2, 3], hint: "Etanol: C₂H₅OH + 3 O₂ → 2 CO₂ + 3 H₂O." },
+                { left: [{ compound: "Ca(OH)₂" }, { compound: "HCl" }], right: [{ compound: "CaCl₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Nøytralisering: Ca(OH)₂ + 2 HCl → CaCl₂ + 2 H₂O." },
+                { left: [{ compound: "KClO₃" }], right: [{ compound: "KCl" }, { compound: "O₂" }], correctCoeffs: [2, 2, 3], hint: "Oppvarming av kaliumklorat: 2 KClO₃ → 2 KCl + 3 O₂." },
+                { left: [{ compound: "FeS₂" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }, { compound: "SO₂" }], correctCoeffs: [4, 11, 2, 8], hint: "Svovelkis: 4 FeS₂ + 11 O₂ → 2 Fe₂O₃ + 8 SO₂." }
+            ]
+        }
+    ];
+
+    // Spilltilstand
+    let currentLevelIdx = 0;
+    let currentLevelData = LEVELS[currentLevelIdx];
+    let reactionsInLevel = currentLevelData.reactions;
+    let currentReactionIdx = 0;           // hvilken reaksjon innad i nivået vi viser
+    let currentReaction = reactionsInLevel[currentReactionIdx];
+    
+    let userAnswers = [];                  // koeffisienter for nåværende reaksjon (array med tall eller tomme strenger)
+    let reactionCompleted = false;         // om nåværende reaksjon er riktig balansert
+    let levelCompletedFlags = [];           // for hver reaksjon i nivået, om den er fullført
+    
+    // DOM-elementer
+    const reactionContainer = document.getElementById('reactionContainer');
+    const checkBtn = document.getElementById('checkBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const hintPanel = document.getElementById('hintPanel');
+    const levelIndicatorSpan = document.getElementById('levelIndicator');
+    const progressIndicatorSpan = document.getElementById('progressIndicator');
+    
+    // Hjelpefunksjon: oppdater fremdrift og knapper
+    function updateUIState() {
+        const total = reactionsInLevel.length;
+        const completedCount = levelCompletedFlags.filter(v => v === true).length;
+        progressIndicatorSpan.innerText = `Reaksjon ${currentReactionIdx+1} / ${total}  |  Fullført: ${completedCount}/${total}`;
+        levelIndicatorSpan.innerText = `Nivå ${currentLevelIdx+1} / ${LEVELS.length} – ${currentLevelData.name}`;
+        
+        // Sjekk om hele nivået er fullført
+        const allLevelCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (reactionCompleted) {
+            // Nåværende reaksjon er fullført – disable check og hint? nei, hint kan fortsatt vises, men sjekk er unødvendig
+            checkBtn.disabled = true;
+            // Neste reaksjon-knapp: hvis det er flere reaksjoner i nivået, aktiver
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.disabled = false;
+                nextBtn.innerText = '➡️ Neste reaksjon';
+            } else if (allLevelCompleted) {
+                // Siste reaksjon i nivået og nivået fullført
+                if (currentLevelIdx + 1 < LEVELS.length) {
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🌟 Neste nivå';
+                } else {
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🏆 Fullfør kurset';
+                }
+            } else {
+                // Siste reaksjon fullført men nivået er ikke fullført? Det skal ikke skje her fordi fullført reaksjon markerer den som completed,
+                // men allLevelCompleted vil være false hvis andre mangler. Da kan man ikke gå videre før alle er fullført.
+                nextBtn.disabled = true;
+                nextBtn.innerText = '🔒 Fullfør alle reaksjoner';
+            }
+            resetBtn.disabled = false;
+        } else {
+            checkBtn.disabled = false;
+            // Neste-knapp: låst hvis reaksjon ikke er fullført
+            nextBtn.disabled = true;
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.innerText = '🔒 Neste reaksjon (låst)';
+            } else if (allLevelCompleted) {
+                nextBtn.innerText = '🌟 Neste nivå';
+            } else {
+                nextBtn.innerText = '🔒 Fullfør reaksjonen først';
+            }
+            resetBtn.disabled = false;
+        }
+        
+        // Spesialtilfelle: hvis alle reaksjoner i nivået er fullført, vis melding
+        if (allLevelCompleted && !reactionCompleted && currentReactionIdx === total-1) {
+            // Dette skjer egentlig ikke fordi siste reaksjon blir satt til completed ved sjekk, men sikkerhet
+        }
+        if (allLevelCompleted && currentReactionIdx === total-1 && reactionCompleted) {
+            if (currentLevelIdx + 1 === LEVELS.length) {
+                feedbackArea.innerHTML = '🎉 Gratulerer! Du har fullført alle nivåene! 🎉 Trykk "Nullstill" for å starte på nytt.';
+                feedbackArea.classList.add('correct');
+            } else {
+                if (!feedbackArea.innerHTML.includes("Nivå fullført")) {
+                    feedbackArea.innerHTML = `✅ Nivå fullført! Trykk "Neste reaksjon" for å gå til neste nivå. ✅`;
+                    feedbackArea.classList.add('correct');
+                }
+            }
+        }
+    }
+    
+    // Bygg visning for nåværende reaksjon
+    function renderCurrentReaction() {
+        const reaction = currentReaction;
+        const totalInputs = reaction.left.length + reaction.right.length;
+        
+        // Opprett userAnswers hvis nødvendig
+        if (!userAnswers || userAnswers.length !== totalInputs) {
+            userAnswers = [];
+            for (let i = 0; i < totalInputs; i++) {
+                userAnswers.push('');
+            }
+        }
+        
+        let html = `
+            <div class="reaction-card">
+                <div class="equation">
+        `;
+        
+        // Venstre side
+        for (let i = 0; i < reaction.left.length; i++) {
+            const comp = reaction.left[i];
+            const val = userAnswers[i] !== undefined && userAnswers[i] !== '' ? userAnswers[i] : '';
+            html += `
+                <span class="coeff">
+                    <input type="number" data-pos="${i}" class="coeff-input" value="${val}" placeholder="?" step="1" min="0" max="99">
+                    <span class="compound">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.left.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `<span class="arrow">→</span>`;
+        
+        // Høyre side
+        const rightStart = reaction.left.length;
+        for (let i = 0; i < reaction.right.length; i++) {
+            const comp = reaction.right[i];
+            const pos = rightStart + i;
+            const val = userAnswers[pos] !== undefined && userAnswers[pos] !== '' ? userAnswers[pos] : '';
+            html += `
+                <span class="coeff">
+                    <input type="number" data-pos="${pos}" class="coeff-input" value="${val}" placeholder="?" step="1" min="0" max="99">
+                    <span class="compound">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.right.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `</div></div>`;
+        
+        reactionContainer.innerHTML = html;
+        
+        // Legg til event listeners
+        const inputs = document.querySelectorAll('.coeff-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                if (reactionCompleted) return;
+                const pos = parseInt(input.getAttribute('data-pos'), 10);
+                let raw = e.target.value.trim();
+                let num = raw === '' ? '' : parseInt(raw, 10);
+                if (raw !== '' && (isNaN(num) || num < 0)) num = '';
+                if (num !== '' && num > 99) num = 99;
+                const final = (num === '' || isNaN(num)) ? '' : num;
+                userAnswers[pos] = final;
+                e.target.value = final === '' ? '' : final;
+                
+                // Ved endring, hvis reaksjonen var merket som completed, må vi tilbakestille status
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                    feedbackArea.style.borderLeftColor = '#3b82f6';
+                } else {
+                    // Fjern gammel feedback for å oppmuntre til ny sjekk
+                    if (feedbackArea.innerHTML.includes("Riktig") || feedbackArea.innerHTML.includes("Feil")) {
+                        feedbackArea.classList.remove('correct', 'wrong');
+                        feedbackArea.innerHTML = '✏️ Endringer registrert – trykk "Sjekk svar" for å verifisere.';
+                        feedbackArea.style.borderLeftColor = '#3b82f6';
+                    }
+                }
+                // Skjul hintpanel hvis bruker endrer noe
+                hintPanel.classList.remove('show');
+            });
+        });
+        
+        // Hvis reaksjon allerede er fullført, disable inputs
+        if (reactionCompleted) {
+            inputs.forEach(inp => inp.disabled = true);
+        } else {
+            inputs.forEach(inp => inp.disabled = false);
+        }
+    }
+    
+    // Sjekk svar uten å avsløre riktig koeffisient
+    function checkAnswer() {
+        if (reactionCompleted) {
+            feedbackArea.innerHTML = '✅ Denne reaksjonen er allerede balansert riktig! Gå videre til neste.';
+            feedbackArea.classList.add('correct');
+            return;
+        }
+        
+        const correct = currentReaction.correctCoeffs;
+        const totalExpected = correct.length;
+        
+        // Sjekk at alle felt er fylt ut
+        let allFilled = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] === '' || userAnswers[i] === null || typeof userAnswers[i] !== 'number') {
+                allFilled = false;
+                break;
+            }
+        }
+        
+        if (!allFilled) {
+            feedbackArea.innerHTML = '⚠️ Du må fylle ut ALLE koeffisienter (ingen tomme felt). Prøv igjen!';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
+            return;
+        }
+        
+        // Sammenlign uten å vise fasit
+        let isCorrect = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] !== correct[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (isCorrect) {
+            // Riktig!
+            reactionCompleted = true;
+            levelCompletedFlags[currentReactionIdx] = true;
+            feedbackArea.innerHTML = '🎉 HELT RIKTIG! 🎉 Flott jobbet! Nå kan du gå videre til neste reaksjon.';
+            feedbackArea.classList.add('correct');
+            feedbackArea.classList.remove('wrong');
+            // Deaktiver inputs
+            const inputs = document.querySelectorAll('.coeff-input');
+            inputs.forEach(inp => inp.disabled = true);
+            updateUIState();
+        } else {
+            // Feil – gir kun beskjed om at det er feil, uten å røpe riktig svar
+            feedbackArea.innerHTML = '❌ FEIL balansering. Prøv igjen! Bruk hint om du trenger hjelp.';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
+            // Bruker får prøve på nytt – ingen fasit vises
+        }
+    }
+    
+    // Vis hint for nåværende reaksjon
+    function showHint() {
+        if (reactionCompleted) {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}<br><em>Reaksjonen er allerede fullført, men her er hintet likevel.</em>`;
+        } else {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}`;
+        }
+        hintPanel.classList.add('show');
+        feedbackArea.classList.remove('correct', 'wrong');
+        // Ikke endre hovedfeedback unødvendig
+    }
+    
+    // Gå til neste reaksjon (eller neste nivå)
+    function nextStep() {
+        const total = reactionsInLevel.length;
+        const allCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (!reactionCompleted && !allCompleted) {
+            feedbackArea.innerHTML = '⚠️ Du må balansere den nåværende reaksjonen før du kan gå videre!';
+            feedbackArea.classList.add('wrong');
+            return;
+        }
+        
+        // Hvis vi har flere reaksjoner i nivået og nåværende er fullført
+        if (currentReactionIdx + 1 < total && levelCompletedFlags[currentReactionIdx]) {
+            // Gå til neste reaksjon i samme nivå
+            currentReactionIdx++;
+            currentReaction = reactionsInLevel[currentReactionIdx];
+            reactionCompleted = levelCompletedFlags[currentReactionIdx] || false;
+            userAnswers = [];
+            // Hvis reaksjonen allerede var fullført, last inn lagrede svar
+            if (reactionCompleted) {
+                // Hent riktige svar fra correctCoeffs for å fylle input (men disable)
+                const correct = currentReaction.correctCoeffs;
+                userAnswers = [...correct];
+            } else {
+                // Tomme svar
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+            }
+            renderCurrentReaction();
+            feedbackArea.classList.remove('correct', 'wrong');
+            feedbackArea.innerHTML = `✨ Reaksjon ${currentReactionIdx+1} av ${total}. Fyll ut koeffisientene. ✨`;
+            feedbackArea.style.borderLeftColor = '#3b82f6';
+            hintPanel.classList.remove('show');
+            updateUIState();
+        } 
+        else if (allCompleted && currentReactionIdx === total-1) {
+            // Hele nivået fullført, gå til neste nivå
+            if (currentLevelIdx + 1 < LEVELS.length) {
+                currentLevelIdx++;
+                currentLevelData = LEVELS[currentLevelIdx];
+                reactionsInLevel = currentLevelData.reactions;
+                currentReactionIdx = 0;
+                currentReaction = reactionsInLevel[0];
+                // Nullstill levelCompletedFlags for nytt nivå
+                levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+                reactionCompleted = false;
+                userAnswers = [];
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+                renderCurrentReaction();
+                feedbackArea.classList.remove('correct', 'wrong');
+                feedbackArea.innerHTML = `🌟 Nytt nivå: ${currentLevelData.name}. Lykke til! 🌟`;
+                feedbackArea.style.borderLeftColor = '#3b82f6';
+                hintPanel.classList.remove('show');
+                updateUIState();
+            } else {
+                // Siste nivå fullført
+                feedbackArea.innerHTML = '🏆 STORT GRATULERER! Du har fullført alle nivåene! 🏆 Trykk "Nullstill" for å starte på nytt.';
+                feedbackArea.classList.add('correct');
+                nextBtn.disabled = true;
+            }
+        } else {
+            feedbackArea.innerHTML = '⚠️ Fullfør alle reaksjonene i dette nivået før du går videre.';
+            feedbackArea.classList.add('wrong');
+        }
+    }
+    
+    // Nullstill nåværende reaksjon (bare denne, ikke hele nivået)
+    function resetCurrent() {
+        if (reactionCompleted) {
+            // Hvis fullført, må vi tilbakestille fullført-status for denne reaksjonen
+            reactionCompleted = false;
+            levelCompletedFlags[currentReactionIdx] = false;
+        }
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.innerHTML = '🔄 Nåværende reaksjon er nullstilt. Prøv igjen!';
+        feedbackArea.style.borderLeftColor = '#3b82f6';
+        hintPanel.classList.remove('show');
+        updateUIState();
+    }
+    
+    // Initialiser spill
+    function initGame() {
+        currentLevelIdx = 0;
+        currentLevelData = LEVELS[0];
+        reactionsInLevel = currentLevelData.reactions;
+        currentReactionIdx = 0;
+        currentReaction = reactionsInLevel[0];
+        levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+        reactionCompleted = false;
+        userAnswers = [];
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        updateUIState();
+        feedbackArea.innerHTML = '📚 Én reaksjon om gangen. Fyll ut koeffisienter, få hint om nødvendig. Lykke til!';
+        feedbackArea.classList.remove('correct', 'wrong');
+        hintPanel.classList.remove('show');
+    }
+    
+    // Knappelyttere
+    checkBtn.addEventListener('click', checkAnswer);
+    hintBtn.addEventListener('click', showHint);
+    nextBtn.addEventListener('click', nextStep);
+    resetBtn.addEventListener('click', resetCurrent);
+    
+    initGame();
+</script>
+</body>
+</html>
