@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Periodisk system - Plasser forkortelser i riktig rute</title>
     <style>
         * {
@@ -14,23 +14,22 @@
             background: linear-gradient(135deg, #0a1a2a 0%, #0f212f 100%);
             font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             min-height: 100vh;
-            padding: 12px;
+            padding: 20px;
             margin: 0;
         }
 
         .game-container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
-            width: 100%;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1.2rem;
         }
 
         h1 {
-            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            font-size: 1.8rem;
             margin: 0;
             background: linear-gradient(135deg, #FFE6C7, #FFB347);
             background-clip: text;
@@ -40,8 +39,8 @@
 
         .sub {
             color: #9bb8d4;
-            font-size: clamp(0.7rem, 3vw, 0.85rem);
-            margin-top: 4px;
+            font-size: 0.85rem;
+            margin-top: 5px;
         }
 
         .status-bar {
@@ -50,25 +49,25 @@
             align-items: center;
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 50px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             border: 1px solid rgba(255, 180, 70, 0.4);
         }
 
         .score-box, .round-box, .progress-box {
             background: #00000066;
-            padding: 0.2rem 0.8rem;
+            padding: 0.2rem 1rem;
             border-radius: 40px;
             font-weight: bold;
-            font-size: clamp(0.7rem, 3vw, 0.9rem);
+            font-size: 0.9rem;
             color: #FFE3A4;
         }
 
         .score-box span, .round-box span, .progress-box span {
-            font-size: clamp(1rem, 4vw, 1.3rem);
+            font-size: 1.3rem;
             font-weight: 800;
             color: #f9b81b;
         }
@@ -78,11 +77,10 @@
             border: none;
             color: #1e2a2e;
             font-weight: bold;
-            padding: 0.3rem 1rem;
+            padding: 0.4rem 1.2rem;
             border-radius: 2rem;
             cursor: pointer;
             transition: 0.2s;
-            font-size: clamp(0.7rem, 3vw, 0.9rem);
         }
 
         .reset-btn:hover {
@@ -93,82 +91,80 @@
         .periodic-wrapper {
             background: rgba(20, 35, 45, 0.7);
             backdrop-filter: blur(4px);
-            border-radius: 1rem;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
             overflow-x: auto;
             border: 1px solid rgba(255, 200, 100, 0.3);
         }
 
-        /* Responsive grid that always fits */
         .pt-grid {
             display: grid;
-            grid-template-columns: repeat(18, minmax(0, 1fr));
-            gap: 3px;
-            width: 100%;
+            grid-template-columns: repeat(18, minmax(68px, 82px));
+            gap: 4px;
+            justify-content: center;
+            min-width: 800px;
         }
 
         .element-cell {
             background: #1e2f38;
-            border-radius: 6px;
-            padding: 4px 2px;
+            border-radius: 8px;
+            padding: 6px 2px;
             text-align: center;
             transition: all 0.15s;
-            border: 1.5px solid #3a6a7a;
+            border: 2px solid #3a6a7a;
             cursor: pointer;
-            min-height: 0;
+            min-height: 70px;
         }
 
         .element-cell.empty-slot {
             background: #2a3a3f;
-            border: 1.5px dashed #ffb347;
-            box-shadow: inset 0 0 6px rgba(255, 180, 70, 0.3);
+            border: 2px dashed #ffb347;
+            box-shadow: inset 0 0 8px rgba(255, 180, 70, 0.3);
         }
 
         .element-cell.completed {
             background: #2b6e3c;
             border-color: #a5d6a5;
-            box-shadow: 0 0 6px #6fbf4c;
+            box-shadow: 0 0 8px #6fbf4c;
         }
 
         .element-cell.active-target {
-            border: 2px solid #ffaa33;
-            box-shadow: 0 0 10px #ffaa33;
-            animation: pulse 0.8s infinite;
+            border: 3px solid #ffaa33;
+            box-shadow: 0 0 12px #ffaa33;
+            animation: pulse 1s infinite;
         }
 
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(255, 170, 51, 0); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 170, 51, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0); }
         }
 
         .atomic-number {
-            font-size: clamp(0.55rem, 2.2vw, 0.7rem);
+            font-size: 0.65rem;
             color: #bbccdd;
             font-weight: normal;
-            line-height: 1.2;
         }
 
         .element-name {
-            font-size: clamp(0.55rem, 2vw, 0.7rem);
+            font-size: 0.7rem;
             font-weight: 600;
             color: #f0f0e0;
             margin-top: 2px;
             white-space: nowrap;
             overflow-x: hidden;
             text-overflow: ellipsis;
-            padding: 0 2px;
         }
 
         .symbol-display {
-            font-size: clamp(0.7rem, 2.8vw, 1rem);
+            font-size: 1rem;
             font-weight: 800;
             background: #00000055;
-            border-radius: 16px;
-            padding: 1px 3px;
+            border-radius: 20px;
+            padding: 2px 4px;
             display: inline-block;
-            margin-top: 2px;
+            margin-top: 3px;
             color: #ffddaa;
         }
 
@@ -180,41 +176,41 @@
         .drag-area {
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
-            border-radius: 1.5rem;
-            padding: 1rem;
+            border-radius: 2rem;
+            padding: 1.5rem;
             margin-top: 0.5rem;
             border: 1px solid #ffb34780;
         }
 
         .drag-title {
             text-align: center;
-            font-size: clamp(0.9rem, 4vw, 1.2rem);
+            font-size: 1.2rem;
             font-weight: bold;
             color: #FFD966;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
         }
 
         .drag-items-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 12px;
+            gap: 20px;
             margin-bottom: 0.5rem;
         }
 
         .drag-symbol {
             background: linear-gradient(145deg, #2c4a3a, #1f3a2a);
-            padding: clamp(8px, 3vw, 12px) clamp(16px, 5vw, 24px);
-            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            padding: 12px 24px;
+            font-size: 1.8rem;
             font-weight: 800;
             text-align: center;
-            border-radius: 24px;
+            border-radius: 28px;
             cursor: grab;
             border: 2px solid #ffc285;
             color: #fff3cf;
-            min-width: clamp(60px, 15vw, 90px);
+            min-width: 90px;
             transition: 0.1s;
-            box-shadow: 0 4px 0 #0f2a1a;
+            box-shadow: 0 6px 0 #0f2a1a;
             letter-spacing: 1px;
         }
 
@@ -228,23 +224,23 @@
 
         .round-feedback {
             text-align: center;
-            margin-top: 0.8rem;
+            margin-top: 1rem;
             font-weight: 500;
             color: #ffdd99;
-            font-size: clamp(0.8rem, 3.5vw, 1rem);
-            min-height: 45px;
+            font-size: 1rem;
+            min-height: 50px;
         }
 
         .next-round-btn {
             background: #3a6b4b;
             border: none;
             color: white;
-            padding: 8px 20px;
+            padding: 10px 28px;
             border-radius: 40px;
-            font-size: clamp(0.8rem, 3.5vw, 1rem);
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 0.6rem;
+            margin-top: 0.8rem;
             transition: 0.2s;
             display: block;
             margin-left: auto;
@@ -261,53 +257,30 @@
             cursor: not-allowed;
         }
 
-        /* Very small screens - adjust spacing */
-        @media (max-width: 700px) {
-            .periodic-wrapper {
-                padding: 0.5rem;
-            }
+        .group-label {
+            font-size: 0.6rem;
+            color: #88aacc;
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1000px) {
             .pt-grid {
-                gap: 2px;
-            }
-            .element-cell {
-                padding: 3px 1px;
-            }
-            .element-name {
-                white-space: normal;
-                line-height: 1.2;
-                font-size: clamp(0.5rem, 1.8vw, 0.65rem);
+                grid-template-columns: repeat(18, minmax(55px, 65px));
+                gap: 3px;
             }
             .drag-symbol {
-                padding: 6px 12px;
-                font-size: 1.1rem;
-                min-width: 55px;
+                padding: 8px 16px;
+                font-size: 1.3rem;
+                min-width: 70px;
             }
-            .status-bar {
-                padding: 0.4rem 0.8rem;
-            }
-        }
-
-        @media (max-width: 550px) {
-            .atomic-number {
-                font-size: 0.5rem;
+            .element-name {
+                font-size: 0.6rem;
+                white-space: normal;
             }
             .symbol-display {
-                font-size: 0.65rem;
-            }
-            .drag-items-container {
-                gap: 8px;
-            }
-        }
-
-        /* Tooltip for better UX */
-        .element-cell {
-            position: relative;
-        }
-        
-        /* Ensure grid is fully responsive */
-        @media (min-width: 1200px) {
-            .pt-grid {
-                gap: 4px;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -440,7 +413,7 @@
     const nextRoundBtn = document.getElementById("nextRoundBtn");
     const resetBtn = document.getElementById("resetGameBtn");
 
-    // Render full periodic table with responsive grid
+    // Render full periodic table with correct group positions (left to right)
     function renderPeriodicTable() {
         periodicGridDiv.innerHTML = "";
         
@@ -489,7 +462,7 @@
                     emptyCell.className = "element-cell";
                     emptyCell.style.background = "rgba(30,40,50,0.2)";
                     emptyCell.style.border = "1px solid #2a4a5a";
-                    emptyCell.style.opacity = "0.4";
+                    emptyCell.style.opacity = "0.5";
                     emptyCell.innerHTML = "";
                     periodicGridDiv.appendChild(emptyCell);
                 }
@@ -568,8 +541,7 @@
                 const msgDiv = document.createElement("div");
                 msgDiv.style.textAlign = "center";
                 msgDiv.style.color = "#aaffaa";
-                msgDiv.style.padding = "15px";
-                msgDiv.style.width = "100%";
+                msgDiv.style.padding = "20px";
                 msgDiv.innerHTML = "✨ Alle 5 forkortelsene er plassert! Klikk 'Neste runde' ✨";
                 dragSymbolsContainer.appendChild(msgDiv);
             }
