@@ -2,678 +2,694 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Periodisk system - Plasser forkortelser i riktig rute</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kjemisk Balanse – Én reaksjon om gangen med hint og Enter-tast</title>
     <style>
         * {
             box-sizing: border-box;
-            user-select: none;
         }
 
         body {
-            background: linear-gradient(135deg, #0a1a2a 0%, #0f212f 100%);
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #e0eaf4 0%, #cfdef3 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            padding: 20px;
             margin: 0;
+            padding: 20px;
         }
 
-        .game-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 1.2rem;
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset;
+            max-width: 800px;
+            width: 100%;
+            padding: 1.8rem 2rem 2.5rem;
+            transition: all 0.2s ease;
         }
 
         h1 {
-            font-size: 1.8rem;
-            margin: 0;
-            background: linear-gradient(135deg, #FFE6C7, #FFB347);
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f4870, #2a6f8f);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
+            margin-top: 0;
+            margin-bottom: 0.4rem;
+            display: inline-block;
         }
 
         .sub {
-            color: #9bb8d4;
-            font-size: 0.85rem;
-            margin-top: 5px;
+            color: #2c3e66;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
 
-        .status-bar {
+        .level-badge {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            padding: 0.6rem 1.2rem;
-            border-radius: 50px;
-            margin-bottom: 1.2rem;
+            align-items: baseline;
             flex-wrap: wrap;
-            gap: 10px;
-            border: 1px solid rgba(255, 180, 70, 0.4);
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #eef2fa;
+            padding: 12px 20px;
+            border-radius: 60px;
         }
 
-        .score-box, .round-box, .progress-box {
-            background: #00000066;
-            padding: 0.2rem 1rem;
+        .level-text {
+            font-weight: 700;
+            background: #1e3a5f;
+            color: white;
+            padding: 6px 20px;
             border-radius: 40px;
-            font-weight: bold;
             font-size: 0.9rem;
-            color: #FFE3A4;
         }
 
-        .score-box span, .round-box span, .progress-box span {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #f9b81b;
+        .progress-badge {
+            background: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.85rem;
         }
 
-        .reset-btn {
-            background: #ff8c42;
-            border: none;
-            color: #1e2a2e;
-            font-weight: bold;
-            padding: 0.4rem 1.2rem;
+        .reaction-card {
+            background: #f8fafd;
             border-radius: 2rem;
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 1.8rem 1.5rem;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 4px #0001, 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid #cbdde9;
         }
 
-        .reset-btn:hover {
-            background: #ffa25e;
+        .equation {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
+            gap: 0.6rem 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .coeff {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            background: #ffffffcc;
+            padding: 0 8px;
+            border-radius: 48px;
+        }
+
+        .coeff input {
+            width: 80px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            font-family: monospace;
+            background: #fffef7;
+            border: 2px solid #c0d4e8;
+            border-radius: 36px;
+            padding: 8px 0;
+            transition: 0.1s linear;
+            color: #0a2b3e;
+        }
+
+        .coeff input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+
+        .coeff input::placeholder {
+            color: #a0bbd0;
+            font-size: 1.2rem;
+            font-weight: normal;
+            opacity: 0.7;
+        }
+
+        .compound {
+            font-weight: 700;
+            background: #eef3fc;
+            padding: 4px 12px;
+            border-radius: 48px;
+            letter-spacing: 0.3px;
+            font-size: 1.2rem;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c6e9e;
+            margin: 0 5px;
+        }
+
+        .plus {
+            font-weight: 800;
+            color: #547e9e;
+            font-size: 1.8rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0 15px;
+        }
+
+        button {
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            background: #2c3e66;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-family: inherit;
+        }
+
+        button:hover:not(:disabled) {
+            background: #1f4b6e;
             transform: scale(0.97);
         }
 
-        .periodic-wrapper {
-            background: rgba(20, 35, 45, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 1.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            overflow-x: auto;
-            border: 1px solid rgba(255, 200, 100, 0.3);
-        }
-
-        .pt-grid {
-            display: grid;
-            grid-template-columns: repeat(18, minmax(68px, 82px));
-            gap: 4px;
-            justify-content: center;
-            min-width: 800px;
-        }
-
-        .element-cell {
-            background: #1e2f38;
-            border-radius: 8px;
-            padding: 6px 2px;
-            text-align: center;
-            transition: all 0.15s;
-            border: 2px solid #3a6a7a;
-            cursor: pointer;
-            min-height: 70px;
-        }
-
-        .element-cell.empty-slot {
-            background: #2a3a3f;
-            border: 2px dashed #ffb347;
-            box-shadow: inset 0 0 8px rgba(255, 180, 70, 0.3);
-        }
-
-        .element-cell.completed {
-            background: #2b6e3c;
-            border-color: #a5d6a5;
-            box-shadow: 0 0 8px #6fbf4c;
-        }
-
-        .element-cell.active-target {
-            border: 3px solid #ffaa33;
-            box-shadow: 0 0 12px #ffaa33;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(255, 170, 51, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0); }
-        }
-
-        .atomic-number {
-            font-size: 0.65rem;
-            color: #bbccdd;
-            font-weight: normal;
-        }
-
-        .element-name {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #f0f0e0;
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow-x: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .symbol-display {
-            font-size: 1rem;
-            font-weight: 800;
-            background: #00000055;
-            border-radius: 20px;
-            padding: 2px 4px;
-            display: inline-block;
-            margin-top: 3px;
-            color: #ffddaa;
-        }
-
-        .element-cell.completed .symbol-display {
-            background: #3e9e4e;
-            color: white;
-        }
-
-        .drag-area {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            margin-top: 0.5rem;
-            border: 1px solid #ffb34780;
-        }
-
-        .drag-title {
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #FFD966;
-            margin-bottom: 1rem;
-        }
-
-        .drag-items-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 0.5rem;
-        }
-
-        .drag-symbol {
-            background: linear-gradient(145deg, #2c4a3a, #1f3a2a);
-            padding: 12px 24px;
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-align: center;
-            border-radius: 28px;
-            cursor: grab;
-            border: 2px solid #ffc285;
-            color: #fff3cf;
-            min-width: 90px;
-            transition: 0.1s;
-            box-shadow: 0 6px 0 #0f2a1a;
-            letter-spacing: 1px;
-        }
-
-        .drag-symbol:active {
-            cursor: grabbing;
-        }
-
-        .drag-symbol.dragging {
-            opacity: 0.4;
-        }
-
-        .round-feedback {
-            text-align: center;
-            margin-top: 1rem;
-            font-weight: 500;
-            color: #ffdd99;
-            font-size: 1rem;
-            min-height: 50px;
-        }
-
-        .next-round-btn {
-            background: #3a6b4b;
-            border: none;
-            color: white;
-            padding: 10px 28px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 0.8rem;
-            transition: 0.2s;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .next-round-btn:hover:not(:disabled) {
-            background: #4e8a5e;
-            transform: scale(1.02);
-        }
-
-        .next-round-btn:disabled {
+        button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .group-label {
-            font-size: 0.6rem;
-            color: #88aacc;
-            text-align: center;
-            margin-bottom: 5px;
-            font-weight: bold;
+        .hint-btn {
+            background: #d97706;
         }
 
-        @media (max-width: 1000px) {
-            .pt-grid {
-                grid-template-columns: repeat(18, minmax(55px, 65px));
-                gap: 3px;
-            }
-            .drag-symbol {
-                padding: 8px 16px;
-                font-size: 1.3rem;
-                min-width: 70px;
-            }
-            .element-name {
-                font-size: 0.6rem;
-                white-space: normal;
-            }
-            .symbol-display {
-                font-size: 0.85rem;
-            }
+        .hint-btn:hover:not(:disabled) {
+            background: #b85e00;
+        }
+
+        .next-btn {
+            background: #1f6e43;
+        }
+
+        .reset-btn {
+            background: #5a6e7c;
+        }
+
+        .feedback {
+            background: #e9f0f5;
+            border-radius: 2rem;
+            padding: 14px 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 6px solid #3b82f6;
+            transition: all 0.2s;
+        }
+
+        .feedback.correct {
+            background: #dff3e3;
+            border-left-color: #2b9348;
+            color: #145c2e;
+        }
+
+        .feedback.wrong {
+            background: #ffe6e5;
+            border-left-color: #e11d48;
+            color: #9b1c2c;
+        }
+
+        .hint-container {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            background: #fffbeb;
+            border-radius: 1.5rem;
+            padding: 12px 16px;
+            display: none;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .hint-container.show {
+            display: block;
+        }
+
+        .key-hint {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 12px;
+            color: #5a6e7c;
+            background: #eef2fa;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 24px;
+            color: #4a627a;
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 1.2rem; }
+            .coeff input { width: 60px; font-size: 1.3rem; }
+            .compound { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-<div class="game-container">
-    <div class="header">
-        <h1>⚛️ Periodisk system · Plasser forkortelser ⚛️</h1>
-        <div class="sub">Dra forkortelsen til riktig rute i tabellen (atomnummer + navn vises)</div>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h1>⚖️ Balanser kjemiske ligninger</h1>
+        <span style="font-size: 1.5rem;">🧪✨</span>
+    </div>
+    <div class="sub">📌 Én reaksjon om gangen – fyll ut manglende koeffisienter. Trykk <kbd>Enter</kbd> for å sjekke!</div>
+
+    <div class="level-badge">
+        <span class="level-text" id="levelIndicator">Nivå 1 / 4</span>
+        <span class="progress-badge" id="progressIndicator">Reaksjon 1 / 4</span>
     </div>
 
-    <div class="status-bar">
-        <div class="score-box">🏆 Riktige: <span id="totalScore">0</span></div>
-        <div class="round-box">🔄 Runde #<span id="roundNumber">1</span></div>
-        <div class="progress-box">📊 Fullførte: <span id="completedCount">0</span> / <span id="totalElementsCount"></span></div>
-        <button class="reset-btn" id="resetGameBtn">🔄 Nytt spill</button>
+    <div id="reactionContainer">
+        <!-- Dynamisk generert reaksjonskort -->
     </div>
 
-    <div class="periodic-wrapper">
-        <div id="periodicGrid" class="pt-grid"></div>
+    <div class="button-group">
+        <button id="checkBtn">🔍 Sjekk svar (Enter)</button>
+        <button id="hintBtn" class="hint-btn">💡 Vis hint</button>
+        <button id="nextBtn" class="next-btn" disabled>🔒 Neste reaksjon</button>
+        <button id="resetBtn" class="reset-btn">🔄 Nullstill</button>
     </div>
 
-    <div class="drag-area" id="dragArea">
-        <div class="drag-title">📌 Dra disse 5 forkortelsene til riktig plass i tabellen 📌</div>
-        <div id="dragSymbolsList" class="drag-items-container"></div>
-        <div class="round-feedback" id="feedbackMsg"></div>
-        <button id="nextRoundBtn" class="next-round-btn" disabled>➡️ Neste runde (5 nye)</button>
+    <div id="feedbackArea" class="feedback">
+        ✏️ Fyll ut koeffisientene (tomme felt = ?). Trykk "Sjekk svar" eller Enter.
     </div>
+    <div id="hintPanel" class="hint-container"></div>
+    <div class="key-hint">💡 Tips: Trykk Enter i et hvilket som helst felt for å sjekke svaret</div>
+    <footer>
+        💡 Koeffisienter skal være hele positive tall. Etter feil får du prøve igjen uten å få vite fasit.
+    </footer>
 </div>
 
 <script>
-    // Complete periodic table data with correct group positions (1-18 from left to right)
-    // Main groups: 1,2, then 3-12 (transition), then 13-18
-    const elementsData = [
-        // Periode 1
-        { atomic: 1, name: "Hydrogen", symbol: "H", period: 1, group: 1 },
-        { atomic: 2, name: "Helium", symbol: "He", period: 1, group: 18 },
-        // Periode 2
-        { atomic: 3, name: "Litium", symbol: "Li", period: 2, group: 1 },
-        { atomic: 4, name: "Beryllium", symbol: "Be", period: 2, group: 2 },
-        { atomic: 5, name: "Bor", symbol: "B", period: 2, group: 13 },
-        { atomic: 6, name: "Karbon", symbol: "C", period: 2, group: 14 },
-        { atomic: 7, name: "Nitrogen", symbol: "N", period: 2, group: 15 },
-        { atomic: 8, name: "Oksygen", symbol: "O", period: 2, group: 16 },
-        { atomic: 9, name: "Fluor", symbol: "F", period: 2, group: 17 },
-        { atomic: 10, name: "Neon", symbol: "Ne", period: 2, group: 18 },
-        // Periode 3
-        { atomic: 11, name: "Natrium", symbol: "Na", period: 3, group: 1 },
-        { atomic: 12, name: "Magnesium", symbol: "Mg", period: 3, group: 2 },
-        { atomic: 13, name: "Aluminium", symbol: "Al", period: 3, group: 13 },
-        { atomic: 14, name: "Silisium", symbol: "Si", period: 3, group: 14 },
-        { atomic: 15, name: "Fosfor", symbol: "P", period: 3, group: 15 },
-        { atomic: 16, name: "Svovel", symbol: "S", period: 3, group: 16 },
-        { atomic: 17, name: "Klor", symbol: "Cl", period: 3, group: 17 },
-        { atomic: 18, name: "Argon", symbol: "Ar", period: 3, group: 18 },
-        // Periode 4 (med overgangsmetaller)
-        { atomic: 19, name: "Kalium", symbol: "K", period: 4, group: 1 },
-        { atomic: 20, name: "Kalsium", symbol: "Ca", period: 4, group: 2 },
-        { atomic: 21, name: "Scandium", symbol: "Sc", period: 4, group: 3 },
-        { atomic: 22, name: "Titan", symbol: "Ti", period: 4, group: 4 },
-        { atomic: 23, name: "Vanadium", symbol: "V", period: 4, group: 5 },
-        { atomic: 24, name: "Krom", symbol: "Cr", period: 4, group: 6 },
-        { atomic: 25, name: "Mangan", symbol: "Mn", period: 4, group: 7 },
-        { atomic: 26, name: "Jern", symbol: "Fe", period: 4, group: 8 },
-        { atomic: 27, name: "Kobolt", symbol: "Co", period: 4, group: 9 },
-        { atomic: 28, name: "Nikkel", symbol: "Ni", period: 4, group: 10 },
-        { atomic: 29, name: "Kobber", symbol: "Cu", period: 4, group: 11 },
-        { atomic: 30, name: "Sink", symbol: "Zn", period: 4, group: 12 },
-        { atomic: 31, name: "Gallium", symbol: "Ga", period: 4, group: 13 },
-        { atomic: 32, name: "Germanium", symbol: "Ge", period: 4, group: 14 },
-        { atomic: 33, name: "Arsen", symbol: "As", period: 4, group: 15 },
-        { atomic: 34, name: "Selen", symbol: "Se", period: 4, group: 16 },
-        { atomic: 35, name: "Brom", symbol: "Br", period: 4, group: 17 },
-        { atomic: 36, name: "Krypton", symbol: "Kr", period: 4, group: 18 },
-        // Periode 5
-        { atomic: 37, name: "Rubidium", symbol: "Rb", period: 5, group: 1 },
-        { atomic: 38, name: "Strontium", symbol: "Sr", period: 5, group: 2 },
-        { atomic: 39, name: "Yttrium", symbol: "Y", period: 5, group: 3 },
-        { atomic: 40, name: "Zirkonium", symbol: "Zr", period: 5, group: 4 },
-        { atomic: 41, name: "Niob", symbol: "Nb", period: 5, group: 5 },
-        { atomic: 42, name: "Molybden", symbol: "Mo", period: 5, group: 6 },
-        { atomic: 43, name: "Technetium", symbol: "Tc", period: 5, group: 7 },
-        { atomic: 44, name: "Rutenium", symbol: "Ru", period: 5, group: 8 },
-        { atomic: 45, name: "Rhodium", symbol: "Rh", period: 5, group: 9 },
-        { atomic: 46, name: "Palladium", symbol: "Pd", period: 5, group: 10 },
-        { atomic: 47, name: "Sølv", symbol: "Ag", period: 5, group: 11 },
-        { atomic: 48, name: "Kadmium", symbol: "Cd", period: 5, group: 12 },
-        { atomic: 49, name: "Indium", symbol: "In", period: 5, group: 13 },
-        { atomic: 50, name: "Tinn", symbol: "Sn", period: 5, group: 14 },
-        { atomic: 51, name: "Antimon", symbol: "Sb", period: 5, group: 15 },
-        { atomic: 52, name: "Tellur", symbol: "Te", period: 5, group: 16 },
-        { atomic: 53, name: "Jod", symbol: "I", period: 5, group: 17 },
-        { atomic: 54, name: "Xenon", symbol: "Xe", period: 5, group: 18 },
-        // Periode 6 (forenklet - viktigste)
-        { atomic: 55, name: "Cesium", symbol: "Cs", period: 6, group: 1 },
-        { atomic: 56, name: "Barium", symbol: "Ba", period: 6, group: 2 },
-        { atomic: 57, name: "Lantan", symbol: "La", period: 6, group: 3 },
-        { atomic: 72, name: "Hafnium", symbol: "Hf", period: 6, group: 4 },
-        { atomic: 73, name: "Tantal", symbol: "Ta", period: 6, group: 5 },
-        { atomic: 74, name: "Wolfram", symbol: "W", period: 6, group: 6 },
-        { atomic: 75, name: "Rhenium", symbol: "Re", period: 6, group: 7 },
-        { atomic: 76, name: "Osmium", symbol: "Os", period: 6, group: 8 },
-        { atomic: 77, name: "Iridium", symbol: "Ir", period: 6, group: 9 },
-        { atomic: 78, name: "Platina", symbol: "Pt", period: 6, group: 10 },
-        { atomic: 79, name: "Gull", symbol: "Au", period: 6, group: 11 },
-        { atomic: 80, name: "Kvikksølv", symbol: "Hg", period: 6, group: 12 },
-        { atomic: 81, name: "Tallium", symbol: "Tl", period: 6, group: 13 },
-        { atomic: 82, name: "Bly", symbol: "Pb", period: 6, group: 14 },
-        { atomic: 83, name: "Vismut", symbol: "Bi", period: 6, group: 15 },
-        { atomic: 84, name: "Polonium", symbol: "Po", period: 6, group: 16 },
-        { atomic: 85, name: "Astat", symbol: "At", period: 6, group: 17 },
-        { atomic: 86, name: "Radon", symbol: "Rn", period: 6, group: 18 }
+    // ---------- REAKSJONER FORDELT PÅ NIVÅER ----------
+    const LEVELS = [
+        { // NIVÅ 1: enkle reaksjoner
+            name: "Grunnleggende",
+            reactions: [
+                { left: [{ compound: "H₂" }, { compound: "O₂" }], right: [{ compound: "H₂O" }], correctCoeffs: [2, 1, 2], hint: "Prøv å sette 2 foran H₂O, og juster H₂ og O₂ slik at antall atomer stemmer på begge sider." },
+                { left: [{ compound: "N₂" }, { compound: "H₂" }], right: [{ compound: "NH₃" }], correctCoeffs: [1, 3, 2], hint: "Nitrogenmolekyler (N₂) trenger 3 H₂ for å lage 2 NH₃." },
+                { left: [{ compound: "C" }, { compound: "O₂" }], right: [{ compound: "CO₂" }], correctCoeffs: [1, 1, 1], hint: "Forbrenning av karbon: ett karbonatom og ett oksygenmolekyl gir ett CO₂-molekyl." },
+                { left: [{ compound: "H₂" }, { compound: "Cl₂" }], right: [{ compound: "HCl" }], correctCoeffs: [1, 1, 2], hint: "Hydrogen og klor reagerer i forhold 1:1 og danner to molekyler HCl." }
+            ]
+        },
+        { // NIVÅ 2: forbrenning
+            name: "Forbrenning",
+            reactions: [
+                { left: [{ compound: "CH₄" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Metan + oksygen → karbondioksid + vann. Balanser karbon først, deretter hydrogen, til slutt oksygen." },
+                { left: [{ compound: "C₂H₆" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [2, 7, 4, 6], hint: "Etan: 2 C₂H₆ trenger 7 O₂ for å gi 4 CO₂ og 6 H₂O." },
+                { left: [{ compound: "Mg" }, { compound: "O₂" }], right: [{ compound: "MgO" }], correctCoeffs: [2, 1, 2], hint: "Magnesium oksiderer: 2 Mg + O₂ → 2 MgO." },
+                { left: [{ compound: "Al" }, { compound: "O₂" }], right: [{ compound: "Al₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Aluminium + oksygen gir aluminiumoksid: 4 Al + 3 O₂ → 2 Al₂O₃." }
+            ]
+        },
+        { // NIVÅ 3: mer utfordrende
+            name: "Metaller & ammoniakk",
+            reactions: [
+                { left: [{ compound: "Fe" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Jern rust: 4 jernatomer + 3 oksygenmolekyler → 2 jernoksid (Fe₂O₃)." },
+                { left: [{ compound: "NH₃" }, { compound: "O₂" }], right: [{ compound: "NO" }, { compound: "H₂O" }], correctCoeffs: [4, 5, 4, 6], hint: "Amoniakk + oksygen: 4 NH₃ + 5 O₂ → 4 NO + 6 H₂O." },
+                { left: [{ compound: "C₃H₈" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 5, 3, 4], hint: "Propan: C₃H₈ + 5 O₂ → 3 CO₂ + 4 H₂O." },
+                { left: [{ compound: "Na" }, { compound: "H₂O" }], right: [{ compound: "NaOH" }, { compound: "H₂" }], correctCoeffs: [2, 2, 2, 1], hint: "Natrium + vann: 2 Na + 2 H₂O → 2 NaOH + H₂." }
+            ]
+        },
+        { // NIVÅ 4: avansert
+            name: "Avansert",
+            reactions: [
+                { left: [{ compound: "C₂H₅OH" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 3, 2, 3], hint: "Etanol: C₂H₅OH + 3 O₂ → 2 CO₂ + 3 H₂O." },
+                { left: [{ compound: "Ca(OH)₂" }, { compound: "HCl" }], right: [{ compound: "CaCl₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Nøytralisering: Ca(OH)₂ + 2 HCl → CaCl₂ + 2 H₂O." },
+                { left: [{ compound: "KClO₃" }], right: [{ compound: "KCl" }, { compound: "O₂" }], correctCoeffs: [2, 2, 3], hint: "Oppvarming av kaliumklorat: 2 KClO₃ → 2 KCl + 3 O₂." },
+                { left: [{ compound: "FeS₂" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }, { compound: "SO₂" }], correctCoeffs: [4, 11, 2, 8], hint: "Svovelkis: 4 FeS₂ + 11 O₂ → 2 Fe₂O₃ + 8 SO₂." }
+            ]
+        }
     ];
 
-    // Game state
-    let completedElements = new Set();
-    let totalCorrect = 0;
-    let currentRound = 1;
-    let currentChallengeElements = [];
-    let activeDragItems = [];
-    let dragData = { active: false, symbol: null, atomic: null, element: null };
-
-    const totalElementsCountSpan = document.getElementById("totalElementsCount");
-    const totalScoreSpan = document.getElementById("totalScore");
-    const completedCountSpan = document.getElementById("completedCount");
-    const roundNumberSpan = document.getElementById("roundNumber");
-    const periodicGridDiv = document.getElementById("periodicGrid");
-    const dragSymbolsContainer = document.getElementById("dragSymbolsList");
-    const feedbackMsgDiv = document.getElementById("feedbackMsg");
-    const nextRoundBtn = document.getElementById("nextRoundBtn");
-    const resetBtn = document.getElementById("resetGameBtn");
-
-    // Render full periodic table with correct group positions (left to right)
-    function renderPeriodicTable() {
-        periodicGridDiv.innerHTML = "";
+    // Spilltilstand
+    let currentLevelIdx = 0;
+    let currentLevelData = LEVELS[currentLevelIdx];
+    let reactionsInLevel = currentLevelData.reactions;
+    let currentReactionIdx = 0;
+    let currentReaction = reactionsInLevel[currentReactionIdx];
+    
+    let userAnswers = [];
+    let reactionCompleted = false;
+    let levelCompletedFlags = [];
+    
+    // DOM-elementer
+    const reactionContainer = document.getElementById('reactionContainer');
+    const checkBtn = document.getElementById('checkBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const hintPanel = document.getElementById('hintPanel');
+    const levelIndicatorSpan = document.getElementById('levelIndicator');
+    const progressIndicatorSpan = document.getElementById('progressIndicator');
+    
+    // Oppdater UI basert på status
+    function updateUIState() {
+        const total = reactionsInLevel.length;
+        const completedCount = levelCompletedFlags.filter(v => v === true).length;
+        progressIndicatorSpan.innerText = `Reaksjon ${currentReactionIdx+1} / ${total}  |  Fullført: ${completedCount}/${total}`;
+        levelIndicatorSpan.innerText = `Nivå ${currentLevelIdx+1} / ${LEVELS.length} – ${currentLevelData.name}`;
         
-        for (let period = 1; period <= 6; period++) {
-            for (let group = 1; group <= 18; group++) {
-                const element = elementsData.find(el => el.period === period && el.group === group);
-                
-                if (element) {
-                    const isCompleted = completedElements.has(element.atomic);
-                    const isInCurrentRound = currentChallengeElements.some(e => e.atomic === element.atomic && !e.placed);
-                    
-                    const cell = document.createElement("div");
-                    cell.className = "element-cell";
-                    if (isCompleted) cell.classList.add("completed");
-                    if (isInCurrentRound && !isCompleted) cell.classList.add("empty-slot", "active-target");
-                    
-                    cell.setAttribute("data-atomic", element.atomic);
-                    cell.setAttribute("data-symbol", element.symbol);
-                    cell.setAttribute("data-name", element.name);
-                    
-                    const symbolHtml = isCompleted ? 
-                        `<div class="symbol-display">${element.symbol}</div>` : 
-                        `<div class="symbol-display">⬚ ⬚</div>`;
-                    
-                    cell.innerHTML = `
-                        <div class="atomic-number">${element.atomic}</div>
-                        <div class="element-name">${element.name}</div>
-                        ${symbolHtml}
-                    `;
-                    
-                    // Drop event listeners
-                    cell.addEventListener("dragover", (e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = "move";
-                    });
-                    
-                    cell.addEventListener("drop", (e) => {
-                        e.preventDefault();
-                        handleDrop(element);
-                    });
-                    
-                    periodicGridDiv.appendChild(cell);
+        const allLevelCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (reactionCompleted) {
+            checkBtn.disabled = true;
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.disabled = false;
+                nextBtn.innerText = '➡️ Neste reaksjon';
+            } else if (allLevelCompleted) {
+                if (currentLevelIdx + 1 < LEVELS.length) {
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🌟 Neste nivå';
                 } else {
-                    // Empty cell for positions without elements
-                    const emptyCell = document.createElement("div");
-                    emptyCell.className = "element-cell";
-                    emptyCell.style.background = "rgba(30,40,50,0.2)";
-                    emptyCell.style.border = "1px solid #2a4a5a";
-                    emptyCell.style.opacity = "0.5";
-                    emptyCell.innerHTML = "";
-                    periodicGridDiv.appendChild(emptyCell);
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🏆 Fullfør kurset';
+                }
+            } else {
+                nextBtn.disabled = true;
+                nextBtn.innerText = '🔒 Fullfør alle reaksjoner';
+            }
+            resetBtn.disabled = false;
+        } else {
+            checkBtn.disabled = false;
+            nextBtn.disabled = true;
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.innerText = '🔒 Neste reaksjon (låst)';
+            } else if (allLevelCompleted) {
+                nextBtn.innerText = '🌟 Neste nivå';
+            } else {
+                nextBtn.innerText = '🔒 Fullfør reaksjonen først';
+            }
+            resetBtn.disabled = false;
+        }
+        
+        if (allLevelCompleted && currentReactionIdx === total-1 && reactionCompleted) {
+            if (currentLevelIdx + 1 === LEVELS.length) {
+                if (!feedbackArea.innerHTML.includes("Gratulerer")) {
+                    feedbackArea.innerHTML = '🎉 Gratulerer! Du har fullført alle nivåene! 🎉 Trykk "Nullstill" for å starte på nytt.';
+                    feedbackArea.classList.add('correct');
                 }
             }
         }
     }
     
-    // Handle drop on element cell
-    function handleDrop(element) {
-        if (!dragData.active || !dragData.symbol) {
-            feedbackMsgDiv.innerHTML = "⚠️ Dra en forkortelse fra listen under tabellen!";
+    // Bygg visning for nåværende reaksjon
+    function renderCurrentReaction() {
+        const reaction = currentReaction;
+        const totalInputs = reaction.left.length + reaction.right.length;
+        
+        if (!userAnswers || userAnswers.length !== totalInputs) {
+            userAnswers = [];
+            for (let i = 0; i < totalInputs; i++) {
+                userAnswers.push('');
+            }
+        }
+        
+        let html = `
+            <div class="reaction-card">
+                <div class="equation">
+        `;
+        
+        for (let i = 0; i < reaction.left.length; i++) {
+            const comp = reaction.left[i];
+            const val = userAnswers[i] !== undefined && userAnswers[i] !== '' ? userAnswers[i] : '';
+            html += `
+                <span class="coeff">
+                    <input type="number" data-pos="${i}" class="coeff-input" value="${val}" placeholder="?" step="1" min="0" max="99">
+                    <span class="compound">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.left.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `<span class="arrow">→</span>`;
+        
+        const rightStart = reaction.left.length;
+        for (let i = 0; i < reaction.right.length; i++) {
+            const comp = reaction.right[i];
+            const pos = rightStart + i;
+            const val = userAnswers[pos] !== undefined && userAnswers[pos] !== '' ? userAnswers[pos] : '';
+            html += `
+                <span class="coeff">
+                    <input type="number" data-pos="${pos}" class="coeff-input" value="${val}" placeholder="?" step="1" min="0" max="99">
+                    <span class="compound">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.right.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `</div></div>`;
+        
+        reactionContainer.innerHTML = html;
+        
+        // Legg til event listeners med Enter-støtte
+        const inputs = document.querySelectorAll('.coeff-input');
+        inputs.forEach(input => {
+            // Input-endring
+            input.addEventListener('input', (e) => {
+                if (reactionCompleted) return;
+                const pos = parseInt(input.getAttribute('data-pos'), 10);
+                let raw = e.target.value.trim();
+                let num = raw === '' ? '' : parseInt(raw, 10);
+                if (raw !== '' && (isNaN(num) || num < 0)) num = '';
+                if (num !== '' && num > 99) num = 99;
+                const final = (num === '' || isNaN(num)) ? '' : num;
+                userAnswers[pos] = final;
+                e.target.value = final === '' ? '' : final;
+                
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                    feedbackArea.style.borderLeftColor = '#3b82f6';
+                } else {
+                    if (feedbackArea.innerHTML.includes("Riktig") || feedbackArea.innerHTML.includes("Feil")) {
+                        feedbackArea.classList.remove('correct', 'wrong');
+                        feedbackArea.innerHTML = '✏️ Endringer registrert – trykk "Sjekk svar" eller Enter.';
+                        feedbackArea.style.borderLeftColor = '#3b82f6';
+                    }
+                }
+                hintPanel.classList.remove('show');
+            });
+            
+            // ** Enter-tast-støtte **
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkAnswer();
+                }
+            });
+        });
+        
+        if (reactionCompleted) {
+            inputs.forEach(inp => inp.disabled = true);
+        } else {
+            inputs.forEach(inp => inp.disabled = false);
+        }
+    }
+    
+    // Sjekk svar uten å avsløre riktig koeffisient
+    function checkAnswer() {
+        if (reactionCompleted) {
+            feedbackArea.innerHTML = '✅ Denne reaksjonen er allerede balansert riktig! Gå videre til neste.';
+            feedbackArea.classList.add('correct');
             return;
         }
         
-        if (completedElements.has(element.atomic)) {
-            feedbackMsgDiv.innerHTML = `❌ ${element.name} er allerede riktig plassert!`;
-            resetDragState();
+        const correct = currentReaction.correctCoeffs;
+        const totalExpected = correct.length;
+        
+        let allFilled = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] === '' || userAnswers[i] === null || typeof userAnswers[i] !== 'number') {
+                allFilled = false;
+                break;
+            }
+        }
+        
+        if (!allFilled) {
+            feedbackArea.innerHTML = '⚠️ Du må fylle ut ALLE koeffisienter (ingen tomme felt). Prøv igjen!';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
             return;
         }
         
-        const challengeItem = currentChallengeElements.find(e => e.atomic === element.atomic && !e.placed);
-        if (!challengeItem) {
-            feedbackMsgDiv.innerHTML = `⚠️ "${element.name}" er ikke i denne rundens 5 elementer. Fullfør de som er uthevet!`;
-            resetDragState();
+        let isCorrect = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] !== correct[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (isCorrect) {
+            reactionCompleted = true;
+            levelCompletedFlags[currentReactionIdx] = true;
+            feedbackArea.innerHTML = '🎉 HELT RIKTIG! 🎉 Flott jobbet! Nå kan du gå videre til neste reaksjon.';
+            feedbackArea.classList.add('correct');
+            feedbackArea.classList.remove('wrong');
+            const inputs = document.querySelectorAll('.coeff-input');
+            inputs.forEach(inp => inp.disabled = true);
+            updateUIState();
+        } else {
+            feedbackArea.innerHTML = '❌ FEIL balansering. Prøv igjen! Bruk hint om du trenger hjelp.';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
+        }
+    }
+    
+    // Vis hint
+    function showHint() {
+        if (reactionCompleted) {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}<br><em>Reaksjonen er allerede fullført, men her er hintet likevel.</em>`;
+        } else {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}`;
+        }
+        hintPanel.classList.add('show');
+    }
+    
+    // Gå til neste reaksjon eller nivå
+    function nextStep() {
+        const total = reactionsInLevel.length;
+        const allCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (!reactionCompleted && !allCompleted) {
+            feedbackArea.innerHTML = '⚠️ Du må balansere den nåværende reaksjonen før du kan gå videre!';
+            feedbackArea.classList.add('wrong');
             return;
         }
         
-        if (dragData.symbol === element.symbol) {
-            // Correct match
-            challengeItem.placed = true;
-            completedElements.add(element.atomic);
-            totalCorrect++;
-            
-            activeDragItems = activeDragItems.filter(item => item.atomic !== dragData.atomic);
-            
-            updateStats();
-            renderPeriodicTable();
-            renderDragSymbols();
-            
-            feedbackMsgDiv.innerHTML = `✅ Riktig! ${element.name} (${element.symbol}) plassert riktig! 🎉`;
-            
-            const allPlaced = currentChallengeElements.every(e => e.placed === true);
-            if (allPlaced) {
-                feedbackMsgDiv.innerHTML = `🏆 Runde ${currentRound} fullført! Trykk "Neste runde" for nye utfordringer. 🏆`;
-                nextRoundBtn.disabled = false;
+        if (currentReactionIdx + 1 < total && levelCompletedFlags[currentReactionIdx]) {
+            currentReactionIdx++;
+            currentReaction = reactionsInLevel[currentReactionIdx];
+            reactionCompleted = levelCompletedFlags[currentReactionIdx] || false;
+            userAnswers = [];
+            if (reactionCompleted) {
+                const correct = currentReaction.correctCoeffs;
+                userAnswers = [...correct];
+            } else {
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+            }
+            renderCurrentReaction();
+            feedbackArea.classList.remove('correct', 'wrong');
+            feedbackArea.innerHTML = `✨ Reaksjon ${currentReactionIdx+1} av ${total}. Fyll ut koeffisientene. ✨`;
+            feedbackArea.style.borderLeftColor = '#3b82f6';
+            hintPanel.classList.remove('show');
+            updateUIState();
+        } 
+        else if (allCompleted && currentReactionIdx === total-1) {
+            if (currentLevelIdx + 1 < LEVELS.length) {
+                currentLevelIdx++;
+                currentLevelData = LEVELS[currentLevelIdx];
+                reactionsInLevel = currentLevelData.reactions;
+                currentReactionIdx = 0;
+                currentReaction = reactionsInLevel[0];
+                levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+                reactionCompleted = false;
+                userAnswers = [];
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+                renderCurrentReaction();
+                feedbackArea.classList.remove('correct', 'wrong');
+                feedbackArea.innerHTML = `🌟 Nytt nivå: ${currentLevelData.name}. Lykke til! 🌟`;
+                feedbackArea.style.borderLeftColor = '#3b82f6';
+                hintPanel.classList.remove('show');
+                updateUIState();
+            } else {
+                feedbackArea.innerHTML = '🏆 STORT GRATULERER! Du har fullført alle nivåene! 🏆 Trykk "Nullstill" for å starte på nytt.';
+                feedbackArea.classList.add('correct');
+                nextBtn.disabled = true;
             }
         } else {
-            feedbackMsgDiv.innerHTML = `❌ Feil! "${dragData.symbol}" er ikke forkortelsen for ${element.name}. Prøv igjen!`;
-            
-            const cell = document.querySelector(`.element-cell[data-atomic="${element.atomic}"]`);
-            if (cell) {
-                cell.style.transform = "translateX(4px)";
-                setTimeout(() => { if(cell) cell.style.transform = ""; }, 150);
+            feedbackArea.innerHTML = '⚠️ Fullfør alle reaksjonene i dette nivået før du går videre.';
+            feedbackArea.classList.add('wrong');
+        }
+    }
+    
+    // Nullstill nåværende reaksjon
+    function resetCurrent() {
+        if (reactionCompleted) {
+            reactionCompleted = false;
+            levelCompletedFlags[currentReactionIdx] = false;
+        }
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.innerHTML = '🔄 Nåværende reaksjon er nullstilt. Prøv igjen!';
+        feedbackArea.style.borderLeftColor = '#3b82f6';
+        hintPanel.classList.remove('show');
+        updateUIState();
+    }
+    
+    // Initialiser spill
+    function initGame() {
+        currentLevelIdx = 0;
+        currentLevelData = LEVELS[0];
+        reactionsInLevel = currentLevelData.reactions;
+        currentReactionIdx = 0;
+        currentReaction = reactionsInLevel[0];
+        levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+        reactionCompleted = false;
+        userAnswers = [];
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        updateUIState();
+        feedbackArea.innerHTML = '📚 Én reaksjon om gangen. Fyll ut koeffisienter, trykk Enter eller knapp for å sjekke. Lykke til!';
+        feedbackArea.classList.remove('correct', 'wrong');
+        hintPanel.classList.remove('show');
+    }
+    
+    // Knappelyttere
+    checkBtn.addEventListener('click', checkAnswer);
+    hintBtn.addEventListener('click', showHint);
+    nextBtn.addEventListener('click', nextStep);
+    resetBtn.addEventListener('click', resetCurrent);
+    
+    // Global Enter-støtte: hvis noen trykker Enter utenfor input, fokuser på første input (valgfritt)
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && document.activeElement && document.activeElement.classList && 
+            document.activeElement.classList.contains('coeff-input')) {
+            // Allerede håndtert av input event, men hindre dobbel
+            return;
+        }
+        // Hvis Enter trykkes utenfor input og reaksjon ikke fullført, kan vi fokusere første input
+        if (e.key === 'Enter' && !reactionCompleted && checkBtn.disabled === false) {
+            const firstInput = document.querySelector('.coeff-input');
+            if (firstInput && document.activeElement !== firstInput) {
+                firstInput.focus();
+                e.preventDefault();
             }
-        }
-        
-        resetDragState();
-    }
-    
-    function resetDragState() {
-        dragData = { active: false, symbol: null, atomic: null, element: null };
-    }
-    
-    function updateStats() {
-        totalScoreSpan.innerText = totalCorrect;
-        completedCountSpan.innerText = completedElements.size;
-        roundNumberSpan.innerText = currentRound;
-    }
-    
-    // Render draggable symbols
-    function renderDragSymbols() {
-        dragSymbolsContainer.innerHTML = "";
-        
-        if (activeDragItems.length === 0) {
-            if (currentChallengeElements.length > 0 && currentChallengeElements.every(e => e.placed)) {
-                const msgDiv = document.createElement("div");
-                msgDiv.style.textAlign = "center";
-                msgDiv.style.color = "#aaffaa";
-                msgDiv.style.padding = "20px";
-                msgDiv.innerHTML = "✨ Alle 5 forkortelsene er plassert! Klikk 'Neste runde' ✨";
-                dragSymbolsContainer.appendChild(msgDiv);
-            }
-            return;
-        }
-        
-        activeDragItems.forEach(item => {
-            const dragDiv = document.createElement("div");
-            dragDiv.className = "drag-symbol";
-            dragDiv.setAttribute("data-symbol", item.symbol);
-            dragDiv.setAttribute("data-atomic", item.atomic);
-            dragDiv.textContent = item.symbol;
-            dragDiv.draggable = true;
-            
-            dragDiv.addEventListener("dragstart", (e) => {
-                dragData = {
-                    active: true,
-                    symbol: item.symbol,
-                    atomic: item.atomic,
-                    element: dragDiv
-                };
-                e.dataTransfer.setData("text/plain", item.symbol);
-                e.dataTransfer.effectAllowed = "move";
-                dragDiv.classList.add("dragging");
-            });
-            
-            dragDiv.addEventListener("dragend", (e) => {
-                dragDiv.classList.remove("dragging");
-                if (dragData.element === dragDiv) {
-                    resetDragState();
-                }
-            });
-            
-            dragSymbolsContainer.appendChild(dragDiv);
-        });
-    }
-    
-    // Generate new round with 5 random uncompleted elements
-    function generateNewRound() {
-        const notCompleted = elementsData.filter(el => !completedElements.has(el.atomic));
-        
-        if (notCompleted.length === 0) {
-            feedbackMsgDiv.innerHTML = "🎉 GRATULERER! Du har fullført hele periodiske systemet! 🎉";
-            nextRoundBtn.disabled = true;
-            dragSymbolsContainer.innerHTML = "<div style='text-align:center; color:#aaffaa; padding:20px;'>🌟 Fullført - Du er en mester i periodisk system! 🌟</div>";
-            return false;
-        }
-        
-        // Shuffle and pick up to 5 elements
-        const shuffled = [...notCompleted];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        
-        const takeCount = Math.min(5, shuffled.length);
-        const selected = shuffled.slice(0, takeCount);
-        
-        currentChallengeElements = selected.map(el => ({
-            atomic: el.atomic,
-            symbol: el.symbol,
-            name: el.name,
-            placed: false
-        }));
-        
-        activeDragItems = currentChallengeElements.map(el => ({
-            atomic: el.atomic,
-            symbol: el.symbol
-        }));
-        
-        // Shuffle active drag items for better gameplay
-        for (let i = activeDragItems.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [activeDragItems[i], activeDragItems[j]] = [activeDragItems[j], activeDragItems[i]];
-        }
-        
-        renderPeriodicTable();
-        renderDragSymbols();
-        
-        feedbackMsgDiv.innerHTML = `🔬 Runde ${currentRound}: Plasser disse ${activeDragItems.length} forkortelsene i de uthevede rutene! 🔬`;
-        nextRoundBtn.disabled = true;
-        
-        return true;
-    }
-    
-    // Go to next round
-    function nextRound() {
-        const allPlaced = currentChallengeElements.every(e => e.placed === true);
-        if (!allPlaced) {
-            feedbackMsgDiv.innerHTML = "⚠️ Du må plassere alle 5 forkortelsene før du går til neste runde!";
-            return;
-        }
-        
-        const remaining = elementsData.filter(el => !completedElements.has(el.atomic));
-        if (remaining.length === 0) {
-            feedbackMsgDiv.innerHTML = "🏆 Gratulerer! Du har fullført hele spillet! 🏆";
-            nextRoundBtn.disabled = true;
-            return;
-        }
-        
-        currentRound++;
-        generateNewRound();
-    }
-    
-    // Reset entire game
-    function resetGame() {
-        completedElements.clear();
-        totalCorrect = 0;
-        currentRound = 1;
-        currentChallengeElements = [];
-        activeDragItems = [];
-        resetDragState();
-        
-        updateStats();
-        generateNewRound();
-        feedbackMsgDiv.innerHTML = "Spillet er tilbakestilt! Dra forkortelsene til riktig rute i tabellen.";
-    }
-    
-    // Initialize
-    totalElementsCountSpan.innerText = elementsData.length;
-    resetGame();
-    
-    // Event listeners
-    nextRoundBtn.addEventListener("click", nextRound);
-    resetBtn.addEventListener("click", resetGame);
-    
-    // Prevent default drag on page
-    window.addEventListener("dragstart", (e) => {
-        if (!e.target.closest(".drag-symbol")) {
-            e.preventDefault();
         }
     });
+    
+    initGame();
 </script>
 </body>
 </html>
