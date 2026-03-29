@@ -622,7 +622,7 @@
     function updateUIState() {
         const total = reactionsInLevel.length;
         const completedCount = levelCompletedFlags.filter(v => v === true).length;
-        progressIndicatorSpan.innerText = `Reaksjon ${currentReactionIdx+1} / ${total}  |  Fullført: ${completedCount}/${total}`;
+        progressIndicatorSpan.innerText = `Reaksjon ${currentReactionIdx+1} / ${total}  `;
         levelIndicatorSpan.innerText = `Nivå ${currentLevelIdx+1} / ${LEVELS.length} – ${currentLevelData.name}`;
         
         const allLevelCompleted = levelCompletedFlags.every(flag => flag === true);
