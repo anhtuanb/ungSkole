@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kjemisk Balanse – Én reaksjon om gangen med hint</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e0eaf4 0%, #cfdef3 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset;
+            max-width: 1200px;
+            width: 100%;
+            padding: 1.8rem 2rem 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f4870, #2a6f8f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-top: 0;
+            margin-bottom: 0.4rem;
+            display: inline-block;
+        }
+
+        .sub {
+            color: #2c3e66;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .level-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #eef2fa;
+            padding: 12px 20px;
+            border-radius: 60px;
+        }
+
+        .level-text {
+            font-weight: 700;
+            background: #1e3a5f;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+
+        .progress-badge {
+            background: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.85rem;
+        }
+
+        /* Nivåvelger */
+        .level-selector {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .level-selector label {
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        .level-selector select {
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 2px solid #c0d4e8;
+            background: white;
+            font-weight: 500;
+            color: #1e3a5f;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .level-selector select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .level-selector button {
+            background: #3b82f6;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .reaction-card {
+            background: #f8fafd;
+            border-radius: 2rem;
+            padding: 1.8rem 1.5rem;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 4px #0001, 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid #cbdde9;
+        }
+
+        /* Informasjonspanel over ligningen */
+        .info-panel {
+            background: linear-gradient(135deg, #e8f0fe 0%, #d9e6f5 100%);
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 6px solid #3b82f6;
+            transition: all 0.3s ease;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-title {
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-content {
+            color: #2c3e66;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .info-content strong {
+            color: #1f4870;
+        }
+
+        .info-panel.hidden {
+            display: none;
+        }
+
+        .equation {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem 0.9rem;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 10px 0;
+        }
+
+        .coeff {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            background: #ffffffcc;
+            padding: 0 8px;
+            border-radius: 48px;
+            flex-shrink: 0;
+        }
+
+        .coeff-input-wrapper {
+            position: relative;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .coeff input {
+            width: 70px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            font-family: monospace;
+            background: #fffef7;
+            border: 2px solid #c0d4e8;
+            border-radius: 36px;
+            padding: 6px 0;
+            transition: 0.1s linear;
+            color: #0a2b3e;
+        }
+
+        .coeff input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .coeff input[type="number"]::-webkit-inner-spin-button,
+        .coeff input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+            height: 20px;
+        }
+
+        .spin-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .spin-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 28px;
+            text-align: center;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .spin-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .compound {
+            font-weight: 700;
+            background: #eef3fc;
+            padding: 4px 12px;
+            border-radius: 48px;
+            letter-spacing: 0.3px;
+            font-size: 1.2rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            user-select: none;
+        }
+
+        .compound:hover {
+            background: #dbeafe;
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .compound.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c6e9e;
+            margin: 0 5px;
+            flex-shrink: 0;
+        }
+
+        .plus {
+            font-weight: 800;
+            color: #547e9e;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0 15px;
+        }
+
+        button {
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            background: #2c3e66;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-family: inherit;
+        }
+
+        button:hover:not(:disabled) {
+            background: #1f4b6e;
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-btn {
+            background: #d97706;
+        }
+
+        .hint-btn:hover:not(:disabled) {
+            background: #b85e00;
+        }
+
+        .next-btn {
+            background: #1f6e43;
+        }
+
+        .reset-btn {
+            background: #5a6e7c;
+        }
+
+        .feedback {
+            background: #e9f0f5;
+            border-radius: 2rem;
+            padding: 14px 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 6px solid #3b82f6;
+            transition: all 0.2s;
+        }
+
+        .feedback.correct {
+            background: #dff3e3;
+            border-left-color: #2b9348;
+            color: #145c2e;
+        }
+
+        .feedback.wrong {
+            background: #ffe6e5;
+            border-left-color: #e11d48;
+            color: #9b1c2c;
+        }
+
+        .hint-container {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            background: #fffbeb;
+            border-radius: 1.5rem;
+            padding: 12px 16px;
+            display: none;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .hint-container.show {
+            display: block;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 24px;
+            color: #4a627a;
+        }
+
+        @media (max-width: 768px) {
+            .card { padding: 1.2rem; }
+            .coeff input { width: 55px; font-size: 1.1rem; }
+            .compound { font-size: 0.9rem; padding: 2px 8px; }
+            .equation { gap: 0.4rem; }
+            .arrow, .plus { font-size: 1.5rem; }
+            .spin-btn { padding: 2px 6px; width: 24px; font-size: 0.7rem; }
+            .level-selector { padding: 8px 15px; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h1>⚖️ Balanser kjemiske ligninger</h1>
+        <span style="font-size: 1.5rem;">🧪✨</span>
+    </div>
+    <div class="sub">Klikk på kjemiske formler for å åpne/lukke informasjon om stoffet over ligningen. Bruk ▲/▼ knappene eller musehjul for å justere koeffisienter.</div>
+
+    <div class="level-badge">
+        <div class="level-selector">
+            <label>Velg startnivå:</label>
+            <select id="levelSelect">
+                <option value="0">Nivå 1: Grunnleggende</option>
+                <option value="1">Nivå 2: Forbrenning</option>
+                <option value="2">Nivå 3: Metaller & ammoniakk</option>
+                <option value="3">Nivå 4: Avansert</option>
+            </select>
+            <button id="goToLevelBtn">Gå til nivå</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <span class="level-text" id="levelIndicator">Nivå 1 / 4</span>
+            <span class="progress-badge" id="progressIndicator">Reaksjon 1 / 4</span>
+        </div>
+    </div>
+
+    <div id="reactionContainer">
+        <!-- Dynamisk generert reaksjonskort -->
+    </div>
+
+    <div class="button-group">
+        <button id="checkBtn">🔍 Sjekk svar</button>
+        <button id="hintBtn" class="hint-btn">💡 Vis hint</button>
+        <button id="nextBtn" class="next-btn" disabled>🔒 Neste reaksjon</button>
+        <button id="resetBtn" class="reset-btn">🔄 Nullstill</button>
+    </div>
+
+    <div id="feedbackArea" class="feedback">
+        ✏️ Fyll ut koeffisientene (tomme felt = ?). Trykk "Sjekk svar".
+    </div>
+    <div id="hintPanel" class="hint-container"></div>
+    <footer>
+        💡 Tips: Koeffisienter skal være hele positive tall. Klikk på formler for å lære mer om stoffene!
+    </footer>
+</div>
+
+<script>
+    // Database med kjemisk informasjon
+    const chemicalDatabase = {
+        // Grunnstoffer
+        "H₂": { name: "Hydrogen (H₂)", properties: "Fargeløs, luktfri gass, svært brannfarlig", where: "Finnes i vann, organiske forbindelser, og som gass i atmosfæren", funFact: "Letteste grunnstoff i universet" },
+        "O₂": { name: "Oksygen (O₂)", properties: "Fargeløs gass, nødvendig for forbrenning og respirasjon", where: "20.9% av jordas atmosfære, i vann (H₂O)", funFact: "Det tredje mest vanlige grunnstoffet i universet" },
+        "N₂": { name: "Nitrogen (N₂)", properties: "Fargeløs, luktfri gass, relativt inert", where: "78% av jordas atmosfære, i proteiner og DNA", funFact: "Brukes til å lage gjødsel gjennom Haber-prosessen" },
+        "C": { name: "Karbon (C)", properties: "Forekommer som grafitt, diamant eller amorft karbon", where: "I alle organiske forbindelser, CO₂ i atmosfæren", funFact: "Har flest kjente forbindelser av alle grunnstoffer" },
+        "Cl₂": { name: "Klor (Cl₂)", properties: "Gulgrønn gass med skarp lukt, giftig", where: "I salt (NaCl), desinfeksjonsmidler", funFact: "Brukt som kjemisk våpen i første verdenskrig" },
+        "Mg": { name: "Magnesium (Mg)", properties: "Skinnende, sølvhvitt metall, svært reaktivt", where: "I klorofyll, i sjøvann og mineraler", funFact: "Brenner med blendende hvitt lys" },
+        "Al": { name: "Aluminium (Al)", properties: "Lett, sølvhvitt metall, god leder av varme og elektrisitet", where: "I bauxitt (malm), emballasje, flyindustri", funFact: "Mest vanlige metall i jordskorpen" },
+        "Fe": { name: "Jern (Fe)", properties: "Magnetisk, sølvhvitt metall, oksiderer lett", where: "I jordskorpen, blod (hemoglobin), stålproduksjon", funFact: "Kjernens sammensmelting i stjerner produserer jern" },
+        "Na": { name: "Natrium (Na)", properties: "Mykt, sølvhvitt metall, ekstremt reaktivt", where: "I salt (NaCl), i sjøvann, i mat", funFact: "Reagerer voldsomt med vann og danner NaOH og H₂" },
+        "Ca": { name: "Kalsium (Ca)", properties: "Mykt, gråhvitt metall, reaktivt", where: "I melk, ost, bein, kalkstein (CaCO₃)", funFact: "Viktig for sterke bein og tenner" },
+        "K": { name: "Kalium (K)", properties: "Mykt, sølvhvitt metall, svært reaktivt", where: "I bananer, poteter, gjødsel", funFact: "Navnet kommer fra arabisk 'al-qalī' som betyr 'plantaske'" },
+        
+        // Forbindelser
+        "H₂O": { name: "Vann (H₂O)", properties: "Fargeløs, luktfri væske, nøytral pH", where: "Dekker 71% av jordoverflaten, i alle levende organismer", funFact: "Eneste stoff som finnes naturlig i alle tre aggregattilstander på jorden" },
+        "NH₃": { name: "Amoniakk (NH₃)", properties: "Skarp lukt, fargeløs gass, basisk", where: "I rengjøringsmidler, gjødsel, i kroppen", funFact: "Brukes i Haber-prosessen for å lage kunstgjødsel" },
+        "CO₂": { name: "Karbondioksid (CO₂)", properties: "Fargeløs gass, tyngre enn luft", where: "I atmosfæren (0.04%), i brus, ved forbrenning", funFact: "Viktig drivhusgass og nødvendig for fotosyntese" },
+        "CH₄": { name: "Metan (CH₄)", properties: "Fargeløs, luktfri gass, brannfarlig", where: "Naturgass, fra fordøyelse hos dyr, myrer", funFact: "22 ganger sterkere drivhuseffekt enn CO₂" },
+        "C₂H₆": { name: "Etan (C₂H₆)", properties: "Fargeløs gass, brannfarlig", where: "I naturgass, som drivstoff", funFact: "Andre enkleste alkan etter metan" },
+        "MgO": { name: "Magnesiumoksid (MgO)", properties: "Hvitt, luktfritt pulver", where: "I ildfaste materialer, i magesyremidler", funFact: "Smeltepunkt på 2852°C" },
+        "Al₂O₃": { name: "Aluminiumoksid (Al₂O₃)", properties: "Hvitt, luktfritt pulver, svært hardt", where: "I rubiner og safirer (urenheter), i keramikk", funFact: "Det mest vanlige oksidet av aluminium" },
+        "Fe₂O₃": { name: "Jern(III)oksid (Fe₂O₃)", properties: "Rødbrunt pulver, magnetisk", where: "I rust, jordfarger (oker)", funFact: "Brukes som pigment i maling og kosmetikk" },
+        "NO": { name: "Nitrogenmonoksid (NO)", properties: "Fargeløs gass, giftig", where: "I eksosgasser, i kroppen som signalmolekyl", funFact: "Vant Nobelprisen i 1998 for rolle i kardiovaskulært system" },
+        "NaOH": { name: "Natriumhydroksid (NaOH)", properties: "Hvite flak, sterkt etsende, basisk", where: "I såpeproduksjon, avløpsåpner", funFact: "Også kjent som 'kaustisk soda'" },
+        "C₃H₈": { name: "Propan (C₃H₈)", properties: "Fargeløs gass, brannfarlig", where: "I gassflasker, campinggass", funFact: "Brukes som drivstoff for gassgriller" },
+        "C₂H₅OH": { name: "Etanol (C₂H₅OH)", properties: "Fargeløs væske, brennbar", where: "I alkoholholdige drikker, desinfeksjon, drivstoff", funFact: "Har vært brukt av mennesker i over 9000 år" },
+        "Ca(OH)₂": { name: "Kalsiumhydroksid (Ca(OH)₂)", properties: "Hvitt pulver, basisk", where: "I mørtel, kalkmaling, tannbehandling", funFact: "Også kjent som 'lesket kalk'" },
+        "HCl": { name: "Saltsyre (HCl)", properties: "Sterk syre, etsende, skarp lukt", where: "I magesaft, rengjøringsmidler", funFact: "Produseres naturlig i magesekken for fordøyelse" },
+        "CaCl₂": { name: "Kalsiumklorid (CaCl₂)", properties: "Hvitt salt, hygroskopisk", where: "I veisalt, tørkemiddel, herding av betong", funFact: "Brukes for å holde støv nede på veier" },
+        "KClO₃": { name: "Kaliumklorat (KClO₃)", properties: "Hvitt krystallinsk pulver, sterkt oksiderende", where: "I fyrverkeri, fyrstikker, eksplosiver", funFact: "Brukes som oksygenkilde i nødsituasjoner" },
+        "KCl": { name: "Kaliumklorid (KCl)", properties: "Hvitt salt, smaker salt", where: "I saltblandinger, gjødsel, medisin", funFact: "Brukes som erstatning for bordsalt for personer med høyt blodtrykk" },
+        "FeS₂": { name: "Jern(II)disulfid (FeS₂)", properties: "Gulmetallisk glans, 'fool's gold'", where: "I svovelkis, som mineral i bergarter", funFact: "Kan lage gnister når det slås mot stål" },
+        "SO₂": { name: "Svoveldioksid (SO₂)", properties: "Skarp lukt, fargeløs gass, giftig", where: "I vulkanske gasser, industrielle utslipp", funFact: "Brukes som konserveringsmiddel i tørket frukt" }
+    };
+
+    // Variabel for å holde styr på aktiv formel
+    let activeFormula = null;
+
+    // Hjelpefunksjon for å hente kjemisk informasjon
+    function getChemicalInfo(formula) {
+        if (chemicalDatabase[formula]) {
+            return chemicalDatabase[formula];
+        }
+        return {
+            name: formula,
+            properties: "Kjemisk forbindelse/grunnstoff. Undersøk nærmere for detaljer.",
+            where: "Forekommer i ulike kjemiske reaksjoner og forbindelser.",
+            funFact: "Kjemi er vitenskapen om stoffers oppbygning, egenskaper og omdanning."
+        };
+    }
+
+    // Vis eller skjul informasjon i panelet
+    function toggleChemicalInfo(formula, element) {
+        const infoPanel = document.getElementById('chemicalInfoPanel');
+        
+        // Hvis samme formel klikkes igjen, lukk panelet
+        if (activeFormula === formula && infoPanel && !infoPanel.classList.contains('hidden')) {
+            infoPanel.classList.add('hidden');
+            // Fjern aktiv klasse fra alle formler
+            document.querySelectorAll('.compound').forEach(comp => {
+                comp.classList.remove('active');
+            });
+            activeFormula = null;
+            return;
+        }
+        
+        // Ellers vis informasjon for den nye formelen
+        const info = getChemicalInfo(formula);
+        const infoTitle = document.getElementById('infoTitle');
+        const infoContent = document.getElementById('infoContent');
+        
+        infoTitle.innerHTML = `🧪 ${info.name}`;
+        infoContent.innerHTML = `
+            <strong>Egenskaper:</strong> ${info.properties}<br>
+            <strong>Hvor finner vi det:</strong> ${info.where}<br>
+            <strong>Visste du?</strong> ${info.funFact}
+        `;
+        infoPanel.classList.remove('hidden');
+        
+        // Fjern aktiv klasse fra alle formler
+        document.querySelectorAll('.compound').forEach(comp => {
+            comp.classList.remove('active');
+        });
+        
+        // Legg til aktiv klasse på den klikkede formelen
+        if (element) {
+            element.classList.add('active');
+        }
+        
+        activeFormula = formula;
+        
+        // Auto-skjul etter 10 sekunder
+        clearTimeout(window.infoTimeout);
+        window.infoTimeout = setTimeout(() => {
+            if (infoPanel && !infoPanel.classList.contains('hidden')) {
+                infoPanel.classList.add('hidden');
+                document.querySelectorAll('.compound').forEach(comp => {
+                    comp.classList.remove('active');
+                });
+                activeFormula = null;
+            }
+        }, 10000);
+    }
+
+    // ---------- REAKSJONER ----------
+    const LEVELS = [
+        {
+            name: "Grunnleggende",
+            reactions: [
+                { left: [{ compound: "H₂" }, { compound: "O₂" }], right: [{ compound: "H₂O" }], correctCoeffs: [2, 1, 2], hint: "Prøv å sette 2 foran H₂O, og juster H₂ og O₂ slik at antall atomer stemmer på begge sider." },
+                { left: [{ compound: "N₂" }, { compound: "H₂" }], right: [{ compound: "NH₃" }], correctCoeffs: [1, 3, 2], hint: "Nitrogenmolekyler (N₂) trenger 3 H₂ for å lage 2 NH₃." },
+                { left: [{ compound: "C" }, { compound: "O₂" }], right: [{ compound: "CO₂" }], correctCoeffs: [1, 1, 1], hint: "Forbrenning av karbon: ett karbonatom og ett oksygenmolekyl gir ett CO₂-molekyl." },
+                { left: [{ compound: "H₂" }, { compound: "Cl₂" }], right: [{ compound: "HCl" }], correctCoeffs: [1, 1, 2], hint: "Hydrogen og klor reagerer i forhold 1:1 og danner to molekyler HCl." }
+            ]
+        },
+        {
+            name: "Forbrenning",
+            reactions: [
+                { left: [{ compound: "CH₄" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Metan + oksygen → karbondioksid + vann. Balanser karbon først, deretter hydrogen, til slutt oksygen." },
+                { left: [{ compound: "C₂H₆" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [2, 7, 4, 6], hint: "Etan: 2 C₂H₆ trenger 7 O₂ for å gi 4 CO₂ og 6 H₂O." },
+                { left: [{ compound: "Mg" }, { compound: "O₂" }], right: [{ compound: "MgO" }], correctCoeffs: [2, 1, 2], hint: "Magnesium oksiderer: 2 Mg + O₂ → 2 MgO." },
+                { left: [{ compound: "Al" }, { compound: "O₂" }], right: [{ compound: "Al₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Aluminium + oksygen gir aluminiumoksid: 4 Al + 3 O₂ → 2 Al₂O₃." }
+            ]
+        },
+        {
+            name: "Metaller & ammoniakk",
+            reactions: [
+                { left: [{ compound: "Fe" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }], correctCoeffs: [4, 3, 2], hint: "Jern rust: 4 jernatomer + 3 oksygenmolekyler → 2 jernoksid (Fe₂O₃)." },
+                { left: [{ compound: "NH₃" }, { compound: "O₂" }], right: [{ compound: "NO" }, { compound: "H₂O" }], correctCoeffs: [4, 5, 4, 6], hint: "Amoniakk + oksygen: 4 NH₃ + 5 O₂ → 4 NO + 6 H₂O." },
+                { left: [{ compound: "C₃H₈" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 5, 3, 4], hint: "Propan: C₃H₈ + 5 O₂ → 3 CO₂ + 4 H₂O." },
+                { left: [{ compound: "Na" }, { compound: "H₂O" }], right: [{ compound: "NaOH" }, { compound: "H₂" }], correctCoeffs: [2, 2, 2, 1], hint: "Natrium + vann: 2 Na + 2 H₂O → 2 NaOH + H₂." }
+            ]
+        },
+        {
+            name: "Avansert",
+            reactions: [
+                { left: [{ compound: "C₂H₅OH" }, { compound: "O₂" }], right: [{ compound: "CO₂" }, { compound: "H₂O" }], correctCoeffs: [1, 3, 2, 3], hint: "Etanol: C₂H₅OH + 3 O₂ → 2 CO₂ + 3 H₂O." },
+                { left: [{ compound: "Ca(OH)₂" }, { compound: "HCl" }], right: [{ compound: "CaCl₂" }, { compound: "H₂O" }], correctCoeffs: [1, 2, 1, 2], hint: "Nøytralisering: Ca(OH)₂ + 2 HCl → CaCl₂ + 2 H₂O." },
+                { left: [{ compound: "KClO₃" }], right: [{ compound: "KCl" }, { compound: "O₂" }], correctCoeffs: [2, 2, 3], hint: "Oppvarming av kaliumklorat: 2 KClO₃ → 2 KCl + 3 O₂." },
+                { left: [{ compound: "FeS₂" }, { compound: "O₂" }], right: [{ compound: "Fe₂O₃" }, { compound: "SO₂" }], correctCoeffs: [4, 11, 2, 8], hint: "Svovelkis: 4 FeS₂ + 11 O₂ → 2 Fe₂O₃ + 8 SO₂." }
+            ]
+        }
+    ];
+
+    // Spilltilstand
+    let currentLevelIdx = 0;
+    let currentLevelData = LEVELS[currentLevelIdx];
+    let reactionsInLevel = currentLevelData.reactions;
+    let currentReactionIdx = 0;
+    let currentReaction = reactionsInLevel[currentReactionIdx];
+    
+    let userAnswers = [];
+    let reactionCompleted = false;
+    let levelCompletedFlags = [];
+    
+    // DOM-elementer
+    const reactionContainer = document.getElementById('reactionContainer');
+    const checkBtn = document.getElementById('checkBtn');
+    const hintBtn = document.getElementById('hintBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const hintPanel = document.getElementById('hintPanel');
+    const levelIndicatorSpan = document.getElementById('levelIndicator');
+    const progressIndicatorSpan = document.getElementById('progressIndicator');
+    const levelSelect = document.getElementById('levelSelect');
+    const goToLevelBtn = document.getElementById('goToLevelBtn');
+    
+    function updateUIState() {
+        const total = reactionsInLevel.length;
+        const completedCount = levelCompletedFlags.filter(v => v === true).length;
+        progressIndicatorSpan.innerText = `Reaksjon ${currentReactionIdx+1} / ${total}  |  Fullført: ${completedCount}/${total}`;
+        levelIndicatorSpan.innerText = `Nivå ${currentLevelIdx+1} / ${LEVELS.length} – ${currentLevelData.name}`;
+        
+        const allLevelCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (reactionCompleted) {
+            checkBtn.disabled = true;
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.disabled = false;
+                nextBtn.innerText = 'Neste reaksjon';
+            } else if (allLevelCompleted) {
+                if (currentLevelIdx + 1 < LEVELS.length) {
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🌟 Neste nivå';
+                } else {
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = '🏆 Fullfør kurset';
+                }
+            } else {
+                nextBtn.disabled = true;
+                nextBtn.innerText = '🔒 Fullfør alle reaksjoner';
+            }
+            resetBtn.disabled = false;
+        } else {
+            checkBtn.disabled = false;
+            nextBtn.disabled = true;
+            if (currentReactionIdx + 1 < total) {
+                nextBtn.innerText = '🔒 Neste reaksjon (låst)';
+            } else if (allLevelCompleted) {
+                nextBtn.innerText = '🌟 Neste nivå';
+            } else {
+                nextBtn.innerText = '🔒 Fullfør reaksjonen først';
+            }
+            resetBtn.disabled = false;
+        }
+    }
+    
+    function renderCurrentReaction() {
+        const reaction = currentReaction;
+        const totalInputs = reaction.left.length + reaction.right.length;
+        
+        if (!userAnswers || userAnswers.length !== totalInputs) {
+            userAnswers = [];
+            for (let i = 0; i < totalInputs; i++) {
+                userAnswers.push('');
+            }
+        }
+        
+        let html = `
+            <div class="reaction-card">
+                <!-- Infopanel over ligningen -->
+                <div id="chemicalInfoPanel" class="info-panel hidden">
+                    <div class="info-title" id="infoTitle">🧪 Kjemisk informasjon</div>
+                    <div class="info-content" id="infoContent"></div>
+                </div>
+                
+                <div class="equation">
+        `;
+        
+        // Venstre side
+        for (let i = 0; i < reaction.left.length; i++) {
+            const comp = reaction.left[i];
+            const val = userAnswers[i] !== undefined && userAnswers[i] !== '' ? userAnswers[i] : '';
+            html += `
+                <span class="coeff">
+                    <div class="coeff-input-wrapper">
+                        <input type="number" data-pos="${i}" class="coeff-input" value="${val}" placeholder="?" step="1" min="1" max="99">
+                        <div class="spin-buttons">
+                            <button type="button" class="spin-btn spin-up" data-pos="${i}">▲</button>
+                            <button type="button" class="spin-btn spin-down" data-pos="${i}">▼</button>
+                        </div>
+                    </div>
+                    <span class="compound" data-formula="${comp.compound}">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.left.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `<span class="arrow">→</span>`;
+        
+        // Høyre side
+        const rightStart = reaction.left.length;
+        for (let i = 0; i < reaction.right.length; i++) {
+            const comp = reaction.right[i];
+            const pos = rightStart + i;
+            const val = userAnswers[pos] !== undefined && userAnswers[pos] !== '' ? userAnswers[pos] : '';
+            html += `
+                <span class="coeff">
+                    <div class="coeff-input-wrapper">
+                        <input type="number" data-pos="${pos}" class="coeff-input" value="${val}" placeholder="?" step="1" min="1" max="99">
+                        <div class="spin-buttons">
+                            <button type="button" class="spin-btn spin-up" data-pos="${pos}">▲</button>
+                            <button type="button" class="spin-btn spin-down" data-pos="${pos}">▼</button>
+                        </div>
+                    </div>
+                    <span class="compound" data-formula="${comp.compound}">${comp.compound}</span>
+                </span>
+            `;
+            if (i < reaction.right.length - 1) html += '<span class="plus">+</span>';
+        }
+        html += `</div></div>`;
+        
+        reactionContainer.innerHTML = html;
+        
+        // Legg til event listeners for inputs
+        const inputs = document.querySelectorAll('.coeff-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                if (reactionCompleted) return;
+                const pos = parseInt(input.getAttribute('data-pos'), 10);
+                let raw = e.target.value.trim();
+                let num = raw === '' ? '' : parseInt(raw, 10);
+                if (raw !== '' && (isNaN(num) || num < 1)) num = '';
+                if (num !== '' && num > 99) num = 99;
+                const final = (num === '' || isNaN(num)) ? '' : num;
+                userAnswers[pos] = final;
+                e.target.value = final === '' ? '' : final;
+                
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                } else {
+                    if (feedbackArea.innerHTML.includes("Riktig") || feedbackArea.innerHTML.includes("Feil")) {
+                        feedbackArea.classList.remove('correct', 'wrong');
+                        feedbackArea.innerHTML = '✏️ Endringer registrert – trykk "Sjekk svar" for å verifisere.';
+                    }
+                }
+                hintPanel.classList.remove('show');
+            });
+            
+            input.addEventListener('wheel', (e) => {
+                if (reactionCompleted) return;
+                e.preventDefault();
+                const pos = parseInt(input.getAttribute('data-pos'), 10);
+                let currentVal = userAnswers[pos];
+                if (currentVal === '' || currentVal === null) currentVal = 1;
+                let delta = e.deltaY > 0 ? -1 : 1;
+                let newVal = currentVal + delta;
+                if (newVal < 1) newVal = 1;
+                if (newVal > 99) newVal = 99;
+                userAnswers[pos] = newVal;
+                input.value = newVal;
+                
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                } else {
+                    if (feedbackArea.innerHTML.includes("Riktig") || feedbackArea.innerHTML.includes("Feil")) {
+                        feedbackArea.classList.remove('correct', 'wrong');
+                        feedbackArea.innerHTML = '✏️ Endringer registrert – trykk "Sjekk svar" for å verifisere.';
+                    }
+                }
+                hintPanel.classList.remove('show');
+            });
+        });
+        
+        // Legg til event listeners for spin-knapper
+        const spinUpBtns = document.querySelectorAll('.spin-up');
+        const spinDownBtns = document.querySelectorAll('.spin-down');
+        
+        spinUpBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (reactionCompleted) return;
+                const pos = parseInt(btn.getAttribute('data-pos'), 10);
+                let currentVal = userAnswers[pos];
+                if (currentVal === '' || currentVal === null) currentVal = 1;
+                let newVal = currentVal + 1;
+                if (newVal > 99) newVal = 99;
+                userAnswers[pos] = newVal;
+                const input = document.querySelector(`.coeff-input[data-pos="${pos}"]`);
+                if (input) input.value = newVal;
+                
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                }
+                hintPanel.classList.remove('show');
+            });
+        });
+        
+        spinDownBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (reactionCompleted) return;
+                const pos = parseInt(btn.getAttribute('data-pos'), 10);
+                let currentVal = userAnswers[pos];
+                if (currentVal === '' || currentVal === null) currentVal = 1;
+                let newVal = currentVal - 1;
+                if (newVal < 1) newVal = 1;
+                userAnswers[pos] = newVal;
+                const input = document.querySelector(`.coeff-input[data-pos="${pos}"]`);
+                if (input) input.value = newVal;
+                
+                if (reactionCompleted) {
+                    reactionCompleted = false;
+                    levelCompletedFlags[currentReactionIdx] = false;
+                    updateUIState();
+                    feedbackArea.classList.remove('correct', 'wrong');
+                    feedbackArea.innerHTML = '✏️ Du har endret koeffisienter – sjekk på nytt.';
+                }
+                hintPanel.classList.remove('show');
+            });
+        });
+        
+        // Legg til klikk-event for kjemiske formler
+        const compounds = document.querySelectorAll('.compound');
+        compounds.forEach(compound => {
+            compound.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const formula = compound.getAttribute('data-formula');
+                toggleChemicalInfo(formula, compound);
+            });
+        });
+        
+        if (reactionCompleted) {
+            inputs.forEach(inp => inp.disabled = true);
+            spinUpBtns.forEach(btn => btn.disabled = true);
+            spinDownBtns.forEach(btn => btn.disabled = true);
+        } else {
+            inputs.forEach(inp => inp.disabled = false);
+            spinUpBtns.forEach(btn => btn.disabled = false);
+            spinDownBtns.forEach(btn => btn.disabled = false);
+        }
+    }
+    
+    function checkAnswer() {
+        if (reactionCompleted) {
+            feedbackArea.innerHTML = '✅ Denne reaksjonen er allerede balansert riktig! Gå videre til neste.';
+            feedbackArea.classList.add('correct');
+            return;
+        }
+        
+        const correct = currentReaction.correctCoeffs;
+        const totalExpected = correct.length;
+        
+        let allFilled = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] === '' || userAnswers[i] === null || typeof userAnswers[i] !== 'number') {
+                allFilled = false;
+                break;
+            }
+        }
+        
+        if (!allFilled) {
+            feedbackArea.innerHTML = '⚠️ Du må fylle ut ALLE koeffisienter (ingen tomme felt). Prøv igjen!';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
+            return;
+        }
+        
+        let isCorrect = true;
+        for (let i = 0; i < totalExpected; i++) {
+            if (userAnswers[i] !== correct[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        
+        if (isCorrect) {
+            reactionCompleted = true;
+            levelCompletedFlags[currentReactionIdx] = true;
+            feedbackArea.innerHTML = '🎉 HELT RIKTIG! 🎉 Flott jobbet! Nå kan du gå videre til neste reaksjon.';
+            feedbackArea.classList.add('correct');
+            feedbackArea.classList.remove('wrong');
+            const inputs = document.querySelectorAll('.coeff-input');
+            const spinBtns = document.querySelectorAll('.spin-btn');
+            inputs.forEach(inp => inp.disabled = true);
+            spinBtns.forEach(btn => btn.disabled = true);
+            updateUIState();
+        } else {
+            feedbackArea.innerHTML = '❌ FEIL balansering. Prøv igjen! Bruk hint om du trenger hjelp.';
+            feedbackArea.classList.add('wrong');
+            feedbackArea.classList.remove('correct');
+        }
+    }
+    
+    function showHint() {
+        if (reactionCompleted) {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}<br><em>Reaksjonen er allerede fullført, men her er hintet likevel.</em>`;
+        } else {
+            hintPanel.innerHTML = `<strong>💡 Hint:</strong> ${currentReaction.hint}`;
+        }
+        hintPanel.classList.add('show');
+        feedbackArea.classList.remove('correct', 'wrong');
+    }
+    
+    function nextStep() {
+        const total = reactionsInLevel.length;
+        const allCompleted = levelCompletedFlags.every(flag => flag === true);
+        
+        if (!reactionCompleted && !allCompleted) {
+            feedbackArea.innerHTML = '⚠️ Du må balansere den nåværende reaksjonen før du kan gå videre!';
+            feedbackArea.classList.add('wrong');
+            return;
+        }
+        
+        if (currentReactionIdx + 1 < total && levelCompletedFlags[currentReactionIdx]) {
+            currentReactionIdx++;
+            currentReaction = reactionsInLevel[currentReactionIdx];
+            reactionCompleted = levelCompletedFlags[currentReactionIdx] || false;
+            userAnswers = [];
+            if (reactionCompleted) {
+                const correct = currentReaction.correctCoeffs;
+                userAnswers = [...correct];
+            } else {
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+            }
+            renderCurrentReaction();
+            feedbackArea.classList.remove('correct', 'wrong');
+            feedbackArea.innerHTML = `✨ Reaksjon ${currentReactionIdx+1} av ${total}. Fyll ut koeffisientene. ✨`;
+            hintPanel.classList.remove('show');
+            updateUIState();
+        } 
+        else if (allCompleted && currentReactionIdx === total-1) {
+            if (currentLevelIdx + 1 < LEVELS.length) {
+                currentLevelIdx++;
+                currentLevelData = LEVELS[currentLevelIdx];
+                reactionsInLevel = currentLevelData.reactions;
+                currentReactionIdx = 0;
+                currentReaction = reactionsInLevel[0];
+                levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+                reactionCompleted = false;
+                userAnswers = [];
+                const totalInputs = currentReaction.left.length + currentReaction.right.length;
+                userAnswers = new Array(totalInputs).fill('');
+                renderCurrentReaction();
+                feedbackArea.classList.remove('correct', 'wrong');
+                feedbackArea.innerHTML = `🌟 Nytt nivå: ${currentLevelData.name}. Lykke til! 🌟`;
+                hintPanel.classList.remove('show');
+                updateUIState();
+                // Oppdater select-boksen
+                levelSelect.value = currentLevelIdx;
+            } else {
+                feedbackArea.innerHTML = '🏆 STORT GRATULERER! Du har fullført alle nivåene! 🏆 Trykk "Nullstill" for å starte på nytt.';
+                feedbackArea.classList.add('correct');
+                nextBtn.disabled = true;
+            }
+        } else {
+            feedbackArea.innerHTML = '⚠️ Fullfør alle reaksjonene i dette nivået før du går videre.';
+            feedbackArea.classList.add('wrong');
+        }
+    }
+    
+    function resetCurrent() {
+        if (reactionCompleted) {
+            reactionCompleted = false;
+            levelCompletedFlags[currentReactionIdx] = false;
+        }
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.innerHTML = '🔄 Nåværende reaksjon er nullstilt. Prøv igjen!';
+        hintPanel.classList.remove('show');
+        updateUIState();
+        // Skjul infopanelet og fjern aktiv klasse
+        const infoPanel = document.getElementById('chemicalInfoPanel');
+        if (infoPanel) infoPanel.classList.add('hidden');
+        document.querySelectorAll('.compound').forEach(comp => {
+            comp.classList.remove('active');
+        });
+        activeFormula = null;
+    }
+    
+    // Gå til valgt nivå
+    function goToLevel() {
+        const selectedLevel = parseInt(levelSelect.value, 10);
+        if (selectedLevel === currentLevelIdx) {
+            feedbackArea.innerHTML = '⚠️ Du er allerede på dette nivået!';
+            feedbackArea.classList.add('wrong');
+            setTimeout(() => {
+                feedbackArea.classList.remove('wrong');
+                feedbackArea.innerHTML = '📚 Velg et annet nivå eller fortsett med dette.';
+            }, 2000);
+            return;
+        }
+        
+        currentLevelIdx = selectedLevel;
+        currentLevelData = LEVELS[currentLevelIdx];
+        reactionsInLevel = currentLevelData.reactions;
+        currentReactionIdx = 0;
+        currentReaction = reactionsInLevel[0];
+        levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+        reactionCompleted = false;
+        userAnswers = [];
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        updateUIState();
+        feedbackArea.classList.remove('correct', 'wrong');
+        feedbackArea.innerHTML = `🎯 Byttet til ${currentLevelData.name} nivå! Lykke til! 🎯`;
+        hintPanel.classList.remove('show');
+        
+        // Skjul infopanelet og fjern aktiv klasse
+        const infoPanel = document.getElementById('chemicalInfoPanel');
+        if (infoPanel) infoPanel.classList.add('hidden');
+        document.querySelectorAll('.compound').forEach(comp => {
+            comp.classList.remove('active');
+        });
+        activeFormula = null;
+    }
+    
+    function initGame() {
+        currentLevelIdx = 0;
+        currentLevelData = LEVELS[0];
+        reactionsInLevel = currentLevelData.reactions;
+        currentReactionIdx = 0;
+        currentReaction = reactionsInLevel[0];
+        levelCompletedFlags = new Array(reactionsInLevel.length).fill(false);
+        reactionCompleted = false;
+        userAnswers = [];
+        const totalInputs = currentReaction.left.length + currentReaction.right.length;
+        userAnswers = new Array(totalInputs).fill('');
+        renderCurrentReaction();
+        updateUIState();
+        feedbackArea.innerHTML = '📚 Én reaksjon om gangen. Klikk på kjemiske formler for å lære mer! Lykke til!';
+        feedbackArea.classList.remove('correct', 'wrong');
+        hintPanel.classList.remove('show');
+        levelSelect.value = "0";
+        activeFormula = null;
+    }
+    
+    checkBtn.addEventListener('click', checkAnswer);
+    hintBtn.addEventListener('click', showHint);
+    nextBtn.addEventListener('click', nextStep);
+    resetBtn.addEventListener('click', resetCurrent);
+    goToLevelBtn.addEventListener('click', goToLevel);
+    
+    initGame();
+</script>
+</body>
+</html>
