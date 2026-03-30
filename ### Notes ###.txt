@@ -1,0 +1,6 @@
+
+** Kjemi_ Balanse ligninger
+	* Knapp over for opp og under for under, koeffisienter
+
+
+----------------------------------------------------------------------------------------------------
