@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Periodisk system - Match navn til forkortelser | Lær om grunnstoffene</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1a2a 0%, #0f212f 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            padding: 12px;
+            margin: 0;
+        }
+
+        .game-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        h1 {
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            margin: 0;
+            background: linear-gradient(135deg, #FFE6C7, #FFB347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #9bb8d4;
+            font-size: clamp(0.7rem, 3vw, 0.85rem);
+            margin-top: 4px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 8px;
+            border: 1px solid rgba(255, 180, 70, 0.4);
+        }
+
+        .score-box, .round-box, .progress-box {
+            background: #00000066;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: clamp(0.7rem, 3vw, 0.9rem);
+            color: #FFE3A4;
+        }
+
+        .score-box span, .round-box span, .progress-box span {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            font-weight: 800;
+            color: #f9b81b;
+        }
+
+        .reset-btn {
+            background: #ff8c42;
+            border: none;
+            color: #1e2a2e;
+            font-weight: bold;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: clamp(0.7rem, 3vw, 0.9rem);
+        }
+
+        .reset-btn:hover {
+            background: #ffa25e;
+            transform: scale(0.97);
+        }
+
+        .element-info-panel {
+            background: linear-gradient(135deg, #0f212f, #1a2f3a);
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin-bottom: 1rem;
+            border-left: 5px solid #ffb347;
+            border-right: 1px solid rgba(255, 180, 70, 0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            min-height: 95px;
+        }
+
+        .element-info-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 200, 100, 0.3);
+            padding-bottom: 6px;
+        }
+
+        .element-info-symbol {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: #ffb34730;
+            padding: 2px 12px;
+            border-radius: 40px;
+            color: #ffdd99;
+            font-family: monospace;
+        }
+
+        .element-info-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #FFE6C7;
+        }
+
+        .element-info-number {
+            font-size: 0.85rem;
+            color: #bbccdd;
+            background: #00000055;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .element-info-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #f0f0e8;
+            text-align: left;
+            max-height: 100px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .info-placeholder {
+            color: #aaccee;
+            font-style: italic;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+
+        .periodic-wrapper {
+            background: rgba(20, 35, 45, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 200, 100, 0.3);
+        }
+
+        .pt-grid {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(0, 1fr));
+            gap: 3px;
+            width: 100%;
+        }
+
+        .element-cell {
+            background: #1e2f38;
+            border-radius: 6px;
+            padding: 6px 2px;
+            text-align: center;
+            transition: all 0.15s;
+            border: 1.5px solid #3a6a7a;
+            cursor: pointer;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .element-cell:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            border-color: #ffaa55;
+        }
+
+        .element-cell.empty-slot {
+            background: #2a3a3f;
+            border: 1.5px dashed #ffb347;
+            box-shadow: inset 0 0 6px rgba(255, 180, 70, 0.3);
+        }
+
+        .element-cell.completed {
+            background: linear-gradient(135deg, #1f6e3a, #155a2c);
+            border-color: #ffd966;
+            box-shadow: 0 0 8px #6fbf4c;
+        }
+
+        .element-cell.active-target {
+            border: 2px solid #ffaa33;
+            box-shadow: 0 0 10px #ffaa33;
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 170, 51, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 170, 51, 0); }
+        }
+
+        .atomic-number {
+            font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+            color: #bbccdd;
+            margin-bottom: 4px;
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            display: inline-block;
+            padding: 0px 6px;
+            border-radius: 20px;
+        }
+
+        .symbol-display {
+            font-size: clamp(1.2rem, 4.5vw, 1.9rem);
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 2px 8px;
+            color: #FFE6B3;
+            font-family: monospace;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        .name-display {
+            font-weight: 700;
+            color: #FFF2CC;
+            margin-top: 3px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 6px;
+            border-radius: 20px;
+            width: auto;
+            display: inline-block;
+            max-width: 95%;
+            white-space: nowrap;
+            text-overflow: clip;
+            letter-spacing: 0.3px;
+            /* Dynamisk font-størrelse vil bli satt via JavaScript */
+        }
+
+        .element-cell.completed .symbol-display {
+            background: #2a8a42;
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .element-cell.completed .name-display {
+            background: #3e9e5a;
+            color: #FFFFFF;
+            font-weight: 700;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        .element-cell.completed .atomic-number {
+            color: #FFE6A0;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .drag-area {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border: 1px solid #ffb34780;
+        }
+
+        .drag-title {
+            text-align: center;
+            font-size: clamp(0.9rem, 4vw, 1.2rem);
+            font-weight: bold;
+            color: #FFD966;
+            margin-bottom: 0.8rem;
+        }
+
+        .drag-items-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .drag-name {
+            background: linear-gradient(145deg, #2c4a3a, #1f3a2a);
+            padding: clamp(8px, 3vw, 12px) clamp(16px, 5vw, 24px);
+            font-size: clamp(1rem, 4.5vw, 1.4rem);
+            font-weight: 700;
+            text-align: center;
+            border-radius: 24px;
+            cursor: grab;
+            border: 2px solid #ffc285;
+            color: #fff3cf;
+            min-width: clamp(100px, 22vw, 150px);
+            transition: 0.1s;
+            box-shadow: 0 4px 0 #0f2a1a;
+        }
+
+        .drag-name:active {
+            cursor: grabbing;
+        }
+
+        .drag-name.dragging {
+            opacity: 0.4;
+        }
+
+        .round-feedback {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-weight: 500;
+            color: #ffdd99;
+            font-size: clamp(0.8rem, 3.5vw, 1rem);
+            min-height: 45px;
+        }
+
+        .next-round-btn {
+            background: #3a6b4b;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: clamp(0.8rem, 3.5vw, 1rem);
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.6rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .next-round-btn:hover:not(:disabled) {
+            background: #4e8a5e;
+            transform: scale(1.02);
+        }
+
+        .next-round-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .click-hint {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #88aacc;
+            margin-top: 5px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 700px) {
+            .periodic-wrapper {
+                padding: 0.5rem;
+            }
+            .pt-grid {
+                gap: 2px;
+            }
+            .element-cell {
+                padding: 4px 1px;
+                min-height: 70px;
+            }
+            .symbol-display {
+                font-size: 1rem;
+                padding: 2px 4px;
+            }
+            .atomic-number {
+                font-size: 0.55rem;
+                margin-bottom: 2px;
+            }
+            .drag-name {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .element-cell {
+                min-height: 65px;
+            }
+            .symbol-display {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="header">
+        <h1>⚛️ Periodisk system · Match navn til forkortelser ⚛️</h1>
+        <div class="sub">📌 Klikk på et grunnstoff i tabellen for å lære om historie, bruk og forekomst | Dra <strong>NAVNET</strong> til riktig <strong>FORKORTELSE</strong> i tabellen</div>
+    </div>
+
+    <div class="status-bar">
+        <div class="score-box">🏆 Riktige: <span id="totalScore">0</span></div>
+        <div class="round-box">🔄 Runde #<span id="roundNumber">1</span></div>
+        <div class="progress-box">📊 Fullførte: <span id="completedCount">0</span> / <span id="totalElementsCount"></span></div>
+        <button class="reset-btn" id="resetGameBtn">🔄 Nytt spill</button>
+    </div>
+
+    <div id="elementInfoPanel" class="element-info-panel">
+        <div class="info-placeholder">✨ Klikk på et grunnstoff i tabellen for å lære om det ✨</div>
+    </div>
+
+    <div class="click-hint">👇 <strong>Klikk på et grunnstoff</strong> for å vise informasjon i feltet ovenfor 👇</div>
+
+    <div class="periodic-wrapper">
+        <div id="periodicGrid" class="pt-grid"></div>
+    </div>
+
+    <div class="drag-area">
+        <div class="drag-title">📌 Dra disse 5 navnene til riktig forkortelse i tabellen 📌</div>
+        <div id="dragNamesList" class="drag-items-container"></div>
+        <div class="round-feedback" id="feedbackMsg"></div>
+        <button id="nextRoundBtn" class="next-round-btn" disabled>➡️ Neste runde (5 nye)</button>
+    </div>
+</div>
+
+<script>
+    // Full periodic table data
+    const elementsData = [
+        { atomic: 1, name: "Hydrogen", symbol: "H", period: 1, group: 1, info: "💧 HYDROGEN: Det letteste og mest utbredte grunnstoffet i universet. Oppdaget av Henry Cavendish i 1766. Brukes til produksjon av ammoniakk (gjødsel), rakettdrivstoff, og hydrogenering av olje. Finnes i vann (H₂O) og alle organiske forbindelser." },
+        { atomic: 2, name: "Helium", symbol: "He", period: 1, group: 18, info: "🎈 HELIUM: Edelgass oppdaget i solens spektrum i 1868. Brukes til å fylle ballonger, kjøle superledere (MR-magneter), og i dykking. Finnes naturlig i naturgass." },
+        { atomic: 3, name: "Litium", symbol: "Li", period: 2, group: 1, info: "🔋 LITIUM: Oppdaget i 1817. Brukes i oppladbare batterier (elbiler, mobiler), smørefett, og medisin mot depresjon." },
+        { atomic: 4, name: "Beryllium", symbol: "Be", period: 2, group: 2, info: "🛰️ BERYLLIUM: Oppdaget i 1798. Brukes i lette legeringer for romfart, røntgenvinduer." },
+        { atomic: 5, name: "Bor", symbol: "B", period: 2, group: 13, info: "🧪 BOR: Oppdaget i 1808. Brukes i glassfiber, rengjøringsmidler, flammehemmere." },
+        { atomic: 6, name: "Karbon", symbol: "C", period: 2, group: 14, info: "✏️ KARBON: Kjent siden oldtiden. Grunnlaget for alt organisk liv. Brukes i stålproduksjon, plast, grafitt." },
+        { atomic: 7, name: "Nitrogen", symbol: "N", period: 2, group: 15, info: "🌾 NITROGEN: Oppdaget i 1772. Utgjør 78% av luften. Brukes i kunstgjødsel." },
+        { atomic: 8, name: "Oksygen", symbol: "O", period: 2, group: 16, info: "🫁 OKSYGEN: Nødvendig for respirasjon. Brukes i medisin, stålverk." },
+        { atomic: 9, name: "Fluor", symbol: "F", period: 2, group: 17, info: "🪥 FLUOR: Brukes i tannkrem, teflon." },
+        { atomic: 10, name: "Neon", symbol: "Ne", period: 2, group: 18, info: "💡 NEON: Brukes i neonlys." },
+        { atomic: 11, name: "Natrium", symbol: "Na", period: 3, group: 1, info: "🧂 NATRIUM: Bordsalt, viktig for nervefunksjon." },
+        { atomic: 12, name: "Magnesium", symbol: "Mg", period: 3, group: 2, info: "🚗 MAGNESIUM: Lette legeringer, klorofyll." },
+        { atomic: 13, name: "Aluminium", symbol: "Al", period: 3, group: 13, info: "🥫 ALUMINIUM: Drikkebokser, fly." },
+        { atomic: 14, name: "Silisium", symbol: "Si", period: 3, group: 14, info: "💻 SILISIUM: Databrikker, solceller." },
+        { atomic: 15, name: "Fosfor", symbol: "P", period: 3, group: 15, info: "🔥 FOSFOR: Fyrstikker, DNA." },
+        { atomic: 16, name: "Svovel", symbol: "S", period: 3, group: 16, info: "⚡ SVOVEL: Svovelsyre, gummi." },
+        { atomic: 17, name: "Klor", symbol: "Cl", period: 3, group: 17, info: "🧴 KLOR: Vannrensing, PVC." },
+        { atomic: 18, name: "Argon", symbol: "Ar", period: 3, group: 18, info: "🛡️ ARGON: Beskyttelsesgass ved sveising." },
+        { atomic: 19, name: "Kalium", symbol: "K", period: 4, group: 1, info: "🍌 KALIUM: Gjødsel, nervefunksjon." },
+        { atomic: 20, name: "Kalsium", symbol: "Ca", period: 4, group: 2, info: "🦴 KALSIUM: Sement, bein." },
+        { atomic: 21, name: "Scandium", symbol: "Sc", period: 4, group: 3, info: "🏅 SCANDIUM: Aluminiumslegeringer." },
+        { atomic: 22, name: "Titan", symbol: "Ti", period: 4, group: 4, info: "✈️ TITAN: Flymotorer, implantater." },
+        { atomic: 23, name: "Vanadium", symbol: "V", period: 4, group: 5, info: "🔩 VANADIUM: Høyfast stål." },
+        { atomic: 24, name: "Krom", symbol: "Cr", period: 4, group: 6, info: "✨ KROM: Rustfritt stål." },
+        { atomic: 25, name: "Mangan", symbol: "Mn", period: 4, group: 7, info: "🔋 MANGAN: Stålproduksjon." },
+        { atomic: 26, name: "Jern", symbol: "Fe", period: 4, group: 8, info: "🏗️ JERN: Byggestål, hemoglobin." },
+        { atomic: 27, name: "Kobolt", symbol: "Co", period: 4, group: 9, info: "🔋 KOBALT: Litium-ion-batterier." },
+        { atomic: 28, name: "Nikkel", symbol: "Ni", period: 4, group: 10, info: "💰 NIKKEL: Mynter, rustfritt stål." },
+        { atomic: 29, name: "Kobber", symbol: "Cu", period: 4, group: 11, info: "⚡ KOBER: Elektriske ledninger." },
+        { atomic: 30, name: "Sink", symbol: "Zn", period: 4, group: 12, info: "🔩 SINK: Galvanisering, solkrem." },
+        { atomic: 31, name: "Gallium", symbol: "Ga", period: 4, group: 13, info: "📱 GALLIUM: Halvledere." },
+        { atomic: 32, name: "Germanium", symbol: "Ge", period: 4, group: 14, info: "🔍 GERMANIUM: Fiberoptikk." },
+        { atomic: 33, name: "Arsen", symbol: "As", period: 4, group: 15, info: "⚠️ ARSEN: Halvledere." },
+        { atomic: 34, name: "Selen", symbol: "Se", period: 4, group: 16, info: "☀️ SELEN: Solceller." },
+        { atomic: 35, name: "Brom", symbol: "Br", period: 4, group: 17, info: "🔥 BROM: Flammehemmere." },
+        { atomic: 36, name: "Krypton", symbol: "Kr", period: 4, group: 18, info: "💡 KRYPTON: Høyytelses lyspærer." },
+        { atomic: 37, name: "Rubidium", symbol: "Rb", period: 5, group: 1, info: "⏱️ RUBIDIUM: Atomklokker." },
+        { atomic: 38, name: "Strontium", symbol: "Sr", period: 5, group: 2, info: "🎆 STRONTIUM: Fyrverkeri." },
+        { atomic: 39, name: "Yttrium", symbol: "Y", period: 5, group: 3, info: "💎 YTTRIUM: Superledere." },
+        { atomic: 40, name: "Zirkonium", symbol: "Zr", period: 5, group: 4, info: "⚛️ ZIRKONIUM: Atomreaktorer." },
+        { atomic: 41, name: "Niob", symbol: "Nb", period: 5, group: 5, info: "🏗️ NIOB: Superlegeringer." },
+        { atomic: 42, name: "Molybden", symbol: "Mo", period: 5, group: 6, info: "🔩 MOLYBDEN: Stållegeringer." },
+        { atomic: 43, name: "Technetium", symbol: "Tc", period: 5, group: 7, info: "🏥 TECHNETIUM: Medisinsk bildebehandling." },
+        { atomic: 44, name: "Rutenium", symbol: "Ru", period: 5, group: 8, info: "✍️ RUTENIUM: Blekkpennspisser." },
+        { atomic: 45, name: "Rhodium", symbol: "Rh", period: 5, group: 9, info: "🚗 RHODIUM: Bilkatalysatorer." },
+        { atomic: 46, name: "Palladium", symbol: "Pd", period: 5, group: 10, info: "🔑 PALLADIUM: Bilkatalysatorer." },
+        { atomic: 47, name: "Sølv", symbol: "Ag", period: 5, group: 11, info: "💍 SØLV: Smykker." },
+        { atomic: 48, name: "Kadmium", symbol: "Cd", period: 5, group: 12, info: "🔋 KADMIUM: NiCd-batterier." },
+        { atomic: 49, name: "Indium", symbol: "In", period: 5, group: 13, info: "📱 INDIUM: Berøringsskjermer." },
+        { atomic: 50, name: "Tinn", symbol: "Sn", period: 5, group: 14, info: "🥫 TINN: Hermetikkbokser." },
+        { atomic: 51, name: "Antimon", symbol: "Sb", period: 5, group: 15, info: "🔥 ANTIMON: Flammehemmere." },
+        { atomic: 52, name: "Tellur", symbol: "Te", period: 5, group: 16, info: "💿 TELLUR: CD-er." },
+        { atomic: 53, name: "Jod", symbol: "I", period: 5, group: 17, info: "🧂 JOD: Jodisert salt." },
+        { atomic: 54, name: "Xenon", symbol: "Xe", period: 5, group: 18, info: "🚗 XENON: Billykter." },
+        { atomic: 55, name: "Cesium", symbol: "Cs", period: 6, group: 1, info: "⏱️ CESIUM: Atomklokker." },
+        { atomic: 56, name: "Barium", symbol: "Ba", period: 6, group: 2, info: "🩻 BARIUM: Røntgenkontrast." }
+    ];
+
+    let completedElements = new Set();
+    let totalCorrect = 0;
+    let currentRound = 1;
+    let currentChallengeElements = [];
+    let activeDragItems = [];
+    let dragData = { active: false, name: null, atomic: null };
+
+    const totalElementsCountSpan = document.getElementById("totalElementsCount");
+    const totalScoreSpan = document.getElementById("totalScore");
+    const completedCountSpan = document.getElementById("completedCount");
+    const roundNumberSpan = document.getElementById("roundNumber");
+    const periodicGridDiv = document.getElementById("periodicGrid");
+    const dragNamesContainer = document.getElementById("dragNamesList");
+    const feedbackMsgDiv = document.getElementById("feedbackMsg");
+    const nextRoundBtn = document.getElementById("nextRoundBtn");
+    const resetBtn = document.getElementById("resetGameBtn");
+    const infoPanel = document.getElementById("elementInfoPanel");
+
+    // Funksjon for å justere font-størrelse basert på navnets lengde
+    function adjustFontSizeForName(nameElement, nameText) {
+        if (!nameElement) return;
+        
+        // Fjern eventuell tidligere inline stil
+        nameElement.style.fontSize = '';
+        
+        // Finn cellens bredde
+        const cell = nameElement.closest('.element-cell');
+        if (!cell) return;
+        
+        const cellWidth = cell.clientWidth;
+        const nameLength = nameText.length;
+        
+        // Juster font-størrelse basert på lengden på navnet og cellebredde
+        let fontSize;
+        if (cellWidth <= 50) {
+            // Veldig små celler (mobil i portrettmodus)
+            if (nameLength <= 6) fontSize = '0.65rem';
+            else if (nameLength <= 9) fontSize = '0.6rem';
+            else if (nameLength <= 12) fontSize = '0.55rem';
+            else fontSize = '0.5rem';
+        } else if (cellWidth <= 70) {
+            // Små celler
+            if (nameLength <= 6) fontSize = '0.7rem';
+            else if (nameLength <= 9) fontSize = '0.65rem';
+            else if (nameLength <= 12) fontSize = '0.6rem';
+            else fontSize = '0.55rem';
+        } else if (cellWidth <= 90) {
+            // Medium celler
+            if (nameLength <= 7) fontSize = '0.75rem';
+            else if (nameLength <= 10) fontSize = '0.7rem';
+            else if (nameLength <= 13) fontSize = '0.65rem';
+            else fontSize = '0.6rem';
+        } else {
+            // Store celler (desktop)
+            if (nameLength <= 7) fontSize = '0.85rem';
+            else if (nameLength <= 10) fontSize = '0.8rem';
+            else if (nameLength <= 13) fontSize = '0.75rem';
+            else fontSize = '0.7rem';
+        }
+        
+        nameElement.style.fontSize = fontSize;
+    }
+
+    function showElementInfo(element) {
+        infoPanel.innerHTML = `
+            <div class="element-info-header">
+                <span class="element-info-symbol">${element.symbol}</span>
+                <span class="element-info-name">${element.name}</span>
+                <span class="element-info-number">Atomnummer ${element.atomic}</span>
+            </div>
+            <div class="element-info-text">${element.info}</div>
+        `;
+    }
+
+    function clearElementInfo() {
+        infoPanel.innerHTML = `<div class="info-placeholder">✨ Klikk på et grunnstoff i tabellen for å lære om det ✨</div>`;
+    }
+
+    function renderPeriodicTable() {
+        periodicGridDiv.innerHTML = "";
+        for (let period = 1; period <= 6; period++) {
+            for (let group = 1; group <= 18; group++) {
+                const element = elementsData.find(el => el.period === period && el.group === group);
+                if (element) {
+                    const isCompleted = completedElements.has(element.atomic);
+                    const isInCurrentRound = currentChallengeElements.some(e => e.atomic === element.atomic && !e.placed);
+                    const cell = document.createElement("div");
+                    cell.className = "element-cell";
+                    if (isCompleted) cell.classList.add("completed");
+                    if (isInCurrentRound && !isCompleted) cell.classList.add("empty-slot", "active-target");
+                    cell.setAttribute("data-atomic", element.atomic);
+                    cell.setAttribute("data-symbol", element.symbol);
+                    cell.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        showElementInfo(element);
+                    });
+                    
+                    // VISER BÅDE FORKORTELSE OG NAVN NÅR ELEMENTET ER FULLFØRT
+                    if (isCompleted) {
+                        cell.innerHTML = `
+                            <div class="atomic-number">${element.atomic}</div>
+                            <div class="symbol-display">${element.symbol}</div>
+                            <div class="name-display">${element.name}</div>
+                        `;
+                        // Juster font-størrelse for navnet
+                        const nameDisplay = cell.querySelector('.name-display');
+                        if (nameDisplay) {
+                            adjustFontSizeForName(nameDisplay, element.name);
+                        }
+                    } else {
+                        cell.innerHTML = `
+                            <div class="atomic-number">${element.atomic}</div>
+                            <div class="symbol-display">${element.symbol}</div>
+                        `;
+                    }
+                    
+                    cell.addEventListener("dragover", (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; });
+                    cell.addEventListener("drop", (e) => { e.preventDefault(); handleDrop(element); });
+                    periodicGridDiv.appendChild(cell);
+                } else {
+                    const emptyCell = document.createElement("div");
+                    emptyCell.className = "element-cell";
+                    emptyCell.style.background = "rgba(30,40,50,0.2)";
+                    emptyCell.style.border = "1px solid #2a4a5a";
+                    emptyCell.style.opacity = "0.4";
+                    emptyCell.innerHTML = "";
+                    periodicGridDiv.appendChild(emptyCell);
+                }
+            }
+        }
+    }
+    
+    function handleDrop(element) {
+        if (!dragData.active || !dragData.name) {
+            feedbackMsgDiv.innerHTML = "⚠️ Dra et navn fra listen under tabellen!";
+            return;
+        }
+        if (completedElements.has(element.atomic)) {
+            feedbackMsgDiv.innerHTML = `❌ ${element.symbol} er allerede riktig plassert!`;
+            resetDragState();
+            return;
+        }
+        const challengeItem = currentChallengeElements.find(e => e.atomic === element.atomic && !e.placed);
+        if (!challengeItem) {
+            feedbackMsgDiv.innerHTML = `⚠️ "${element.symbol}" er ikke i denne rundens 5 elementer. Fullfør de som er uthevet!`;
+            resetDragState();
+            return;
+        }
+        if (dragData.name === element.name) {
+            challengeItem.placed = true;
+            completedElements.add(element.atomic);
+            totalCorrect++;
+            activeDragItems = activeDragItems.filter(item => item.atomic !== dragData.atomic);
+            updateStats();
+            renderPeriodicTable(); // Nå vil boksen vise både forkortelse OG navn med tilpasset font!
+            renderDragNames();
+            feedbackMsgDiv.innerHTML = `✅ RIKTIG! <strong style="color:#ffd966;">${element.name} (${element.symbol})</strong> er nå plassert i boks ${element.atomic} og viser tydelig både forkortelse og navn! 🎉`;
+            
+            const allPlaced = currentChallengeElements.every(e => e.placed === true);
+            if (allPlaced) {
+                feedbackMsgDiv.innerHTML = `🏆 Runde ${currentRound} fullført! Alle 5 grunnstoffene viser nå både forkortelse og navn i tabellen. Trykk "Neste runde" for nye utfordringer. 🏆`;
+                nextRoundBtn.disabled = false;
+            }
+        } else {
+            feedbackMsgDiv.innerHTML = `❌ FEIL! "${dragData.name}" er IKKE navnet for forkortelsen <strong>${element.symbol}</strong> (${element.name}). Prøv igjen! 💡`;
+            const cell = document.querySelector(`.element-cell[data-atomic="${element.atomic}"]`);
+            if (cell) { cell.style.transform = "translateX(4px)"; setTimeout(() => { if(cell) cell.style.transform = ""; }, 150); }
+        }
+        resetDragState();
+    }
+    
+    function resetDragState() { dragData = { active: false, name: null, atomic: null }; }
+    
+    function updateStats() {
+        totalScoreSpan.innerText = totalCorrect;
+        completedCountSpan.innerText = completedElements.size;
+        roundNumberSpan.innerText = currentRound;
+    }
+    
+    function renderDragNames() {
+        dragNamesContainer.innerHTML = "";
+        if (activeDragItems.length === 0) {
+            if (currentChallengeElements.length > 0 && currentChallengeElements.every(e => e.placed)) {
+                const msgDiv = document.createElement("div");
+                msgDiv.style.textAlign = "center";
+                msgDiv.style.color = "#aaffaa";
+                msgDiv.style.padding = "15px";
+                msgDiv.style.width = "100%";
+                msgDiv.innerHTML = "✨ Alle 5 navnene er plassert! Klikk 'Neste runde' ✨";
+                dragNamesContainer.appendChild(msgDiv);
+            }
+            return;
+        }
+        activeDragItems.forEach(item => {
+            const dragDiv = document.createElement("div");
+            dragDiv.className = "drag-name";
+            dragDiv.setAttribute("data-name", item.name);
+            dragDiv.setAttribute("data-atomic", item.atomic);
+            dragDiv.textContent = item.name;
+            dragDiv.draggable = true;
+            dragDiv.addEventListener("dragstart", (e) => {
+                dragData = { active: true, name: item.name, atomic: item.atomic };
+                e.dataTransfer.setData("text/plain", item.name);
+                e.dataTransfer.effectAllowed = "move";
+                dragDiv.classList.add("dragging");
+            });
+            dragDiv.addEventListener("dragend", (e) => {
+                dragDiv.classList.remove("dragging");
+                if (dragData.atomic === item.atomic) resetDragState();
+            });
+            dragNamesContainer.appendChild(dragDiv);
+        });
+    }
+    
+    function generateNewRound() {
+        const notCompleted = elementsData.filter(el => !completedElements.has(el.atomic));
+        if (notCompleted.length === 0) {
+            feedbackMsgDiv.innerHTML = "🎉 GRATULERER! Du har fullført hele periodiske systemet! 🎉";
+            nextRoundBtn.disabled = true;
+            dragNamesContainer.innerHTML = "<div style='text-align:center; color:#aaffaa; padding:20px;'>🌟 Fullført - Du er en mester i periodisk system! 🌟</div>";
+            return false;
+        }
+        const shuffled = [...notCompleted];
+        for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+        const takeCount = Math.min(5, shuffled.length);
+        const selected = shuffled.slice(0, takeCount);
+        currentChallengeElements = selected.map(el => ({ atomic: el.atomic, symbol: el.symbol, name: el.name, placed: false }));
+        activeDragItems = currentChallengeElements.map(el => ({ atomic: el.atomic, name: el.name }));
+        for (let i = activeDragItems.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [activeDragItems[i], activeDragItems[j]] = [activeDragItems[j], activeDragItems[i]]; }
+        renderPeriodicTable();
+        renderDragNames();
+        feedbackMsgDiv.innerHTML = `🔬 Runde ${currentRound}: Dra disse ${activeDragItems.length} navnene til riktig forkortelse i tabellen! Når du matcher riktig, vil boksen vise både forkortelse OG navn! 🔬`;
+        nextRoundBtn.disabled = true;
+        return true;
+    }
+    
+    function nextRound() {
+        const allPlaced = currentChallengeElements.every(e => e.placed === true);
+        if (!allPlaced) { feedbackMsgDiv.innerHTML = "⚠️ Du må plassere alle 5 navnene før du går til neste runde!"; return; }
+        const remaining = elementsData.filter(el => !completedElements.has(el.atomic));
+        if (remaining.length === 0) { feedbackMsgDiv.innerHTML = "🏆 Gratulerer! Du har fullført hele spillet! 🏆"; nextRoundBtn.disabled = true; return; }
+        currentRound++;
+        generateNewRound();
+    }
+    
+    function resetGame() {
+        completedElements.clear();
+        totalCorrect = 0;
+        currentRound = 1;
+        currentChallengeElements = [];
+        activeDragItems = [];
+        resetDragState();
+        clearElementInfo();
+        updateStats();
+        generateNewRound();
+        feedbackMsgDiv.innerHTML = "Spillet er tilbakestilt! Dra navnene til riktig forkortelse i tabellen. Når du matcher riktig, vil boksen vise både forkortelse OG navn!";
+    }
+    
+    // Vindusresize-håndtering for å justere font-størrelser på nytt
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.name-display').forEach(nameEl => {
+            const nameText = nameEl.textContent;
+            if (nameText) {
+                adjustFontSizeForName(nameEl, nameText);
+            }
+        });
+    });
+    
+    totalElementsCountSpan.innerText = elementsData.length;
+    resetGame();
+    nextRoundBtn.addEventListener("click", nextRound);
+    resetBtn.addEventListener("click", resetGame);
+    window.addEventListener("dragstart", (e) => { if (!e.target.closest(".drag-name")) e.preventDefault(); });
+</script>
+</body>
+</html>
